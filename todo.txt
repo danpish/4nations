@@ -1,0 +1,10 @@
+add:
+	table
+	background image
+	click mechanic
+	multiplayer mechanic
+	pause menu
+	main menu
+	settings menu
+fix/improve:
+	cards
