@@ -16,8 +16,10 @@ def update():
 	#a += 0.1
 	#print("mousex " + str(mouse.x) + ": mousey" + str(mouse.y))#for mouse positioning debug
 	#lets cast a beam from the mosue
-	mouse_origin = Vec3(0,0,0)
-	cast_direction = (mouse.x + mouse.x / 8, mouse.y + mouse.y / 8,2) #It was not supposed to work with this but somehow it did
+	mouse_origin = Vec3(0,0,0,)
+	mouseRad  = Vec3(math.radians(mouse.x), math.radians(mouse.y),0)
+	#cast_direction = (mouse.x + mouse.x / 8, mouse.y + mouse.y / 8,2) #It was not supposed to work with this but somehow it did
+	cast_direction = (mouseRad.x, mouseRad.y,0.0285)#done?
 	mouse_raycast = raycast(mouse_origin, cast_direction, debug=True)
 	if mouse_raycast.hit:
 		hitting = mouse_raycast.entity.idi
@@ -50,17 +52,20 @@ class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT 
 	"""
 	def update(self):
 		global hitting
+		movement_speed = 2 * time.dt
 		if hitting == self.idi:
 			if self.xpos < 1.0:
 				self.position = (self.position.x,ofset(self.xpos),self.position.z)
-				self.xpos += 0.05
+				self.xpos += movement_speed
 		#if self.godown:
 		else:
-			if self.xpos >= 0.0:
+			if self.xpos > 0.0:
 				self.position = (self.position.x,ofset(self.xpos),self.position.z)
-				self.xpos -= 0.05
+				self.xpos -= movement_speed
 			#else:
 			#	self.godown = False
+		if self.xpos < 0.0:#Fail safe
+			self.xpos = 0.0
 
 game = Ursina()
 window.isfullscreen = False
