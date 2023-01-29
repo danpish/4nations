@@ -1,5 +1,4 @@
 add:
-	click mechanic
 	multiplayer mechanic
 	pause menu
 	main menu
@@ -10,7 +9,5 @@ fix/improve:
 	cards dont fully go back into position
 	improve mouse click code so its compatibe with diffrent camera positions
 	make camera easy to change position and not break the mouse collision(depends on the previus bug)
-	****Windows 11 notepad is soo broken i f*king hate it.
 	change card position
-	change card handeling system(amounts, exchanger and etc).
 	
