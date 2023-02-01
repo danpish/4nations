@@ -100,6 +100,6 @@ dock[1]=(cards((-0.5,0,10), 1,0,1))
 dock[2]=(cards((0.5,0,10), 2,0,2))
 dock[3]=(cards((1.5,0,10), 3,0,3))
 #add rotation here if needed
-table = Entity(model="cube", position=Vec3(0,-4.5,10), scale=8, color = color.brown)
+table = Entity(model="cube", position=Vec3(0,-4.5,10), scale=8, texture="tabletop.png")
 Sky()
 game.run()
