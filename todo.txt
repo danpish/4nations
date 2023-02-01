@@ -6,8 +6,10 @@ add:
 fix/improve:
 	cards texture
 	add table texture
-	cards dont fully go back into position
-	improve mouse click code so its compatibe with diffrent camera positions
-	make camera easy to change position and not break the mouse collision(depends on the previus bug)
-	change card position
+	change card storing system
+	*Ignores*:
+		cards dont fully go back into position*Ignore*
+		improve mouse click code so its compatibe with diffrent camera positions*Ignore*
+		make camera easy to change position and not break the mouse collision(depends on the previus bug)*Ignore*
+	
 	
