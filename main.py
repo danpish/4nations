@@ -72,16 +72,16 @@ class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT 
 			if not mouse_down and not was_mouse_down:
 				was_mouse_down = True
 				do_delete = False
-				if self.position.x == -2 and dock[0] != "":
+				if self.position.x == -1.5 and dock[0] != "":
 					dock[0] = ""
 					do_delete = True
-				elif self.position.x == -1 and dock[1] != "":
+				elif self.position.x == -0.5 and dock[1] != "":
 					dock[1] = ""
 					do_delete = True
-				elif self.position.x == 1 and dock[2] != "":
+				elif self.position.x == 0.5 and dock[2] != "":
 					dock[2] = ""
 					do_delete = True
-				elif self.position.x == 2 and dock[3] != "":
+				elif self.position.x == 1.5 and dock[3] != "":
 					dock[3] = ""
 					do_delete = True
 				print(dock)
@@ -95,10 +95,10 @@ window.exit_button.enabled = False
 window.fps_counter.visible = True
 #Cube = Entity(model = "quad", position = (0,-1,10), texture='Iran')
 #                     color = color.blue
-dock[0]=(cards((-2,0,10), 0,0,0))
-dock[1]=(cards((-1,0,10), 1,0,1))
-dock[2]=(cards((1,0,10), 2,0,2))
-dock[3]=(cards((2,0,10), 3,0,3))
+dock[0]=(cards((-1.5,0,10), 0,0,0))
+dock[1]=(cards((-0.5,0,10), 1,0,1))
+dock[2]=(cards((0.5,0,10), 2,0,2))
+dock[3]=(cards((1.5,0,10), 3,0,3))
 #add rotation here if needed
 table = Entity(model="cube", position=Vec3(0,-4.5,10), scale=8, color = color.brown)
 Sky()
