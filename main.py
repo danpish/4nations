@@ -6,8 +6,8 @@ with a terrible mental health tooo
 """
 from ursina import *
 dock = ["","","","",""]
-hitting = 255
-a = 0
+#hitting = 255
+#a = 0
 was_mouse_down = True
 def ofset(value):
 	return (value - 1.6)**3 * (1/8) + 0.5
@@ -17,6 +17,7 @@ def update():
 	#a += 0.1
 	#print("mousex " + str(mouse.x) + ": mousey" + str(mouse.y))#for mouse positioning debug
 	#lets cast a beam from the mosue
+	""" This works better than predefined .hovered function in Ursina engine
 	mouse_origin = Vec3(0,0,0,)
 	mouseRad  = Vec3(math.radians(mouse.x), math.radians(mouse.y),0)
 	cast_direction = (mouseRad.x, mouseRad.y,0.0285)#yes its done
@@ -25,6 +26,7 @@ def update():
 		hitting = mouse_raycast.entity.idi
 	else:
 		hitting = 255
+	"""
 
 textures = ["Iran", "france", "armen", "argen"]
 
@@ -50,9 +52,9 @@ class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT 
 		self.godown = True
 	"""
 	def update(self):
-		global hitting, mouse_down, was_mouse_down
+		global mouse_down, was_mouse_down
 		movement_speed = 4 * time.dt
-		if hitting == self.idi:
+		if self.hovered:
 			if self.xpos < 1.0:
 				self.position = (self.position.x,ofset(self.xpos),self.position.z)
 				self.xpos += movement_speed
@@ -62,8 +64,7 @@ class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT 
 				self.xpos -= movement_speed
 		if self.xpos < 0.0:#Fail safe
 			self.xpos = 0.0
-
-		if hitting == self.idi:
+		if self.hovered:
 			if mouse.left:
 				mouse_down = True
 				was_mouse_down = False
@@ -100,6 +101,6 @@ dock[1]=(cards((-0.5,0,10), 1,0,1))
 dock[2]=(cards((0.5,0,10), 2,0,2))
 dock[3]=(cards((1.5,0,10), 3,0,3))
 #add rotation here if needed
-table = Entity(model="cube", position=Vec3(0,-4.5,10), scale=8, texture="tabletop.png")
+table = Entity(model="table", position=Vec3(0,-2.8,10), texture="tabletop.png")
 Sky()
 game.run()
