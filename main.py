@@ -28,7 +28,7 @@ def update():
 		hitting = 255
 	"""
 
-textures = ["Iran", "france", "armen", "argen"]
+textures = ["ir", "fr", "am", "ar"]
 
 class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT WORKES
 	def __init__(self, position, ido, xpos, slot_position):
@@ -36,8 +36,8 @@ class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT 
 		super().__init__(
 			parent = scene,
 			position = position,
-			model="quad",
-			collider = "cube",
+			model="sphere",
+			collider = "sphere",
 			idi = ido,
 			texture = textures[ido],
 			xpos = xpos,
@@ -54,6 +54,7 @@ class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT 
 	def update(self):
 		global mouse_down, was_mouse_down
 		movement_speed = 4 * time.dt
+		self.rotation = Vec3(0,self.rotation.y + (movement_speed * 16),0)
 		if self.hovered:
 			if self.xpos < 1.0:
 				self.position = (self.position.x,ofset(self.xpos),self.position.z)
