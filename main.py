@@ -7,7 +7,7 @@ with a terrible mental health tooo
 from ursina import *
 dock = ["","","","",""]
 #hitting = 255
-#a = 0
+a = 0
 was_mouse_down = True
 def ofset(value):
 	return (value - 1.6)**3 * (1/8) + 0.5
