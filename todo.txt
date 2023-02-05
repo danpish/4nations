@@ -7,10 +7,9 @@ add:
 	add battle UI**relies on network bringup**
 	add country selectio menu**relies on network bringup**
 fix/improve:
-	cards texture
+	cards dont fully go back into position
 	*Ignores*:
 		change card storing system*Ignore*
-		cards dont fully go back into position*Ignore*
 		improve mouse click code so its compatibe with diffrent camera positions*Ignore*
 		make camera easy to change position and not break the mouse collision(depends on the previus bug)*Ignore*
 	
