@@ -99,7 +99,7 @@ window.exit_button.enabled = False
 window.fps_counter.visible = True
 #Main menu
 Main_menu_back = Entity(model="quad", color=color.gray,position=(0,0,3))
-Main_menu_text = Text(parent=Main_menu_back,position=(0,0.4,-0.1), text="Windows")
+Main_menu_text = Text(parent=Main_menu_back,position=(0,0.4,-0.1), text="4NATIONS DEV")
 Main_menu_start = Button(parent=Main_menu_back, scale=.2,position=(0,0.1,-0.1), text="STARt")
 Main_menu_settings = Button(parent=Main_menu_back,scale=.2,position=(0,-0.1,-0.1), text="SEttINGS")
 Main_menu_exit = Button(parent=Main_menu_back, scale=.2,position=(0,-0.3,-0.1), text="EXIt")
