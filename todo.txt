@@ -1,14 +1,19 @@
 add:
-	multiplayer mechanic
+	multiplayer
 	pause menu
-	main menu
 	settings menu
 	add marker(anything that player can get to earn victory)
 	add battle UI**relies on network bringup**
 	add country selectio menu**relies on network bringup**
 fix/improve:
-	cards dont fully go back into position
+	settings:
+		speed of cards rotation(If sphere mode is activated)
+		shape of cards
+		fullscreened?
+		language(If supported by ursina)
+	cards dont fully go back into position(HARD)
 	*Ignores*:
+		improve normal card texture*Ignore*
 		change card storing system*Ignore*
 		improve mouse click code so its compatibe with diffrent camera positions*Ignore*
 		make camera easy to change position and not break the mouse collision(depends on the previus bug)*Ignore*

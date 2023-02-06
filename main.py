@@ -17,7 +17,7 @@ def update():
 	#a += 0.1
 	#print("mousex " + str(mouse.x) + ": mousey" + str(mouse.y))#for mouse positioning debug
 	#lets cast a beam from the mosue
-	""" This works better than predefined .hovered function in Ursina engine
+	""" Never mind. Ursina worked from the first place
 	mouse_origin = Vec3(0,0,0,)
 	mouseRad  = Vec3(math.radians(mouse.x), math.radians(mouse.y),0)
 	cast_direction = (mouseRad.x, mouseRad.y,0.0285)#yes its done
@@ -43,14 +43,6 @@ class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT 
 			xpos = xpos,
 			slot_position = slot_position
 		)
-	"""
-	def picked_up(self):
-		self.goup = True
-		self.godown = False
-	def released(self):
-		self.goup = False
-		self.godown = True
-	"""
 	def update(self):
 		global mouse_down, was_mouse_down
 		movement_speed = 4 * time.dt
@@ -65,6 +57,8 @@ class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT 
 				self.xpos -= movement_speed
 		if self.xpos < 0.0:#Fail safe
 			self.xpos = 0.0
+		elif self.xpos > 5.0:
+			self.xpos = 5.0
 		if self.hovered:
 			if mouse.left:
 				mouse_down = True
@@ -90,18 +84,26 @@ class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT 
 				if do_delete:
 					self.disable()
 game = Ursina()
+
+def on_start():
+	Main_menu_back.disable()
+	dock[0]=(cards((-1.5,0,10), 0,0,0))
+	dock[1]=(cards((-0.5,0,10), 1,0,1))
+	dock[2]=(cards((0.5,0,10), 2,0,2))
+	dock[3]=(cards((1.5,0,10), 3,0,3))
+	table = Entity(model="table", position=Vec3(0,-2.8,10), texture="tabletop.png")
 window.isfullscreen = False
 window.borderless = False
 window.exit_button.visible = False
 window.exit_button.enabled = False
 window.fps_counter.visible = True
-#Cube = Entity(model = "quad", position = (0,-1,10), texture='Iran')
-#                     color = color.blue
-dock[0]=(cards((-1.5,0,10), 0,0,0))
-dock[1]=(cards((-0.5,0,10), 1,0,1))
-dock[2]=(cards((0.5,0,10), 2,0,2))
-dock[3]=(cards((1.5,0,10), 3,0,3))
-#add rotation here if needed
-table = Entity(model="table", position=Vec3(0,-2.8,10), texture="tabletop.png")
+#Main menu
+Main_menu_back = Entity(model="quad", color=color.gray,position=(0,0,3))
+Main_menu_text = Text(parent=Main_menu_back,position=(0,0.4,-0.1), text="Windows")
+Main_menu_start = Button(parent=Main_menu_back, scale=.2,position=(0,0.1,-0.1), text="STARt")
+Main_menu_settings = Button(parent=Main_menu_back,scale=.2,position=(0,-0.1,-0.1), text="SEttINGS")
+Main_menu_exit = Button(parent=Main_menu_back, scale=.2,position=(0,-0.3,-0.1), text="EXIt")
+Main_menu_exit.on_click = application.quit
+Main_menu_start.on_click = on_start
 Sky()
 game.run()
