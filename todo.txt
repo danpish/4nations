@@ -15,7 +15,5 @@ fix/improve:
 	*Ignores*:
 		improve normal card texture*Ignore*
 		change card storing system*Ignore*
-		improve mouse click code so its compatibe with diffrent camera positions*Ignore*
-		make camera easy to change position and not break the mouse collision(depends on the previus bug)*Ignore*
 	
 	
