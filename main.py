@@ -49,16 +49,15 @@ class cards(Entity):# I;m just praying that this works //LATER// OH GOODNESS IT 
 		self.rotation = Vec3(0,self.rotation.y + (movement_speed * 16),0)
 		if self.hovered:
 			if self.xpos < 1.0:
-				self.position = (self.position.x,ofset(self.xpos),self.position.z)
 				self.xpos += movement_speed
 		else:
 			if self.xpos > 0.0:
-				self.position = (self.position.x,ofset(self.xpos),self.position.z)
 				self.xpos -= movement_speed
 		if self.xpos < 0.0:#Fail safe
 			self.xpos = 0.0
 		elif self.xpos > 5.0:
 			self.xpos = 5.0
+		self.position = (self.position.x,ofset(self.xpos),self.position.z)
 		if self.hovered:
 			if mouse.left:
 				mouse_down = True
