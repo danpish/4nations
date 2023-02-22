@@ -11,7 +11,6 @@ fix/improve:
 		shape of cards
 		fullscreened?
 		language(If supported by ursina)
-	cards dont fully go back into position(HARD)
 	*Ignores*:
 		improve normal card texture*Ignore*
 		change card storing system*Ignore*
