@@ -113,20 +113,32 @@ game = Ursina()
 
 def on_begin():
 	global recived_dock
-	Main_menu_back.disable()
+	Main_menu_back.enabled = False
 	current_dock[0]=(cards((-1.5,0,10), int(recived_dock[0]),0,0))
 	current_dock[1]=(cards((-0.5,0,10), int(recived_dock[1]),0,1))
 	current_dock[2]=(cards((0.5,0,10), int(recived_dock[2]),0,2))
 	current_dock[3]=(cards((1.5,0,10), int(recived_dock[3]),0,3))
 	table = Entity(model="table", position=Vec3(0,-2.8,10), texture="tabletop.png")
 
+def reset_menu_UI():
+    Main_menu_host.enabled = False
+    Main_menu_join.enabled = False
+    Main_menu_go_back.enabled = False
+    Main_menu_start.enabled = False
+    Main_menu_settings.enabled = False
+    Main_menu_exit.enabled = False
+
 def on_start():
-	Main_menu_host.enabled = True
-	Main_menu_join.enabled = True
-	Main_menu_back_dere.enabled = True
-	Main_menu_start.enabled = False
-	Main_menu_settings.enabled = False
-	Main_menu_exit.enabled = False
+    reset_menu_UI()
+    Main_menu_host.enabled = True
+    Main_menu_join.enabled = True
+    Main_menu_go_back.enabled = True
+
+def show_main_menu():
+    reset_menu_UI()
+    Main_menu_start.enabled = True
+    Main_menu_settings.enabled = True
+    Main_menu_exit.enabled = True
 
 def join_function():
 	setup_server_client()
@@ -143,14 +155,7 @@ def multiplayer_thread():
         try:
             print("before data recive")
             client.setblocking(0)
-            data = b""
-            while True:
-                part = client.recv(1024)
-                print("cmon do something")
-                data += part
-                if len(part) < 1024:
-                    #Copied from stackoverflow, I don't undrestand this
-                    break
+            data = recive_data()
             print("after data revcive")
         except socket.error as e:
             print(e)
@@ -182,21 +187,23 @@ Main_menu_exit = Button(parent=Main_menu_back, scale=.2,position=(0,-0.3,-0.1))
 #join and host options
 Main_menu_host = Button(parent=Main_menu_back, scale=.2,position=(0,0.1,-0.1))
 Main_menu_join = Button(parent=Main_menu_back, scale=.2,position=(0,-0.1,-0.1))
-Main_menu_back_dere = Button(parent=Main_menu_back, scale=.2,position=(0,-0.3,-0.1))
+Main_menu_go_back = Button(parent=Main_menu_back, scale=.2,position=(0,-0.3,-0.1))
 join_text = Text(parent=Main_menu_join, text = "join", position=(-0.15, 0.1, 0), scale=5)
 host_text = Text(parent=Main_menu_host, text = "host", position=(-0.15, 0.1, 0), scale=5)
-back_text = Text(parent=Main_menu_back_dere, text = "back", position=(-0.15, 0.1, 0), scale=5)
+back_text = Text(parent=Main_menu_go_back, text = "back", position=(-0.15, 0.1, 0), scale=5)
 Main_menu_host.enabled = False
 Main_menu_join.enabled = False
-Main_menu_back_dere.enabled = False
+Main_menu_go_back.enabled = False
+
 #For god sake button text is glitched. So we define our own
 start_text = Text(parent=Main_menu_start, text = "StARt", position=(-0.15, 0.1, 0), scale=5)
 settings_text = Text(parent=Main_menu_settings, text = "SEttINGS", position=(-0.15, 0.1, 0), scale=5)
 exit_text  = Text(parent=Main_menu_exit, text = "EXIt", position=(-0.15, 0.1, 0), scale=5)
-#Button actions(Missing settings)
+
 Main_menu_exit.on_click = application.quit
 Main_menu_start.on_click = on_start
 Main_menu_join.on_click = lambda:on_begin([0,1,2,3])
 Main_menu_host.on_click = join_function
+Main_menu_go_back.on_click = show_main_menu
 Sky()
 game.run()
