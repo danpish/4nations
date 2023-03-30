@@ -12,14 +12,18 @@ was_mouse_down = True
 send_card = False
 connected_ID = 255
 testing = False
+g_data = None
 
 def card_movement_diagram(value):
-	return (value - 1.6)**3 * (1/8) + 0.5
+    return (value - 1.6)**3 * (1/8) + 0.5
 
 def update():
-	global camera_position_z
-	camera_position_z = 0
-	camera.position = (0,0,camera_position_z)
+    global camera_position_z
+    camera_position_z = 0
+    camera.position = (0,0,camera_position_z)
+    if g_data:
+        print(g_data)
+        your_turn_text.enabled = g_data[1] == connected_ID
 
 textures = ["ir", "fr", "am", "ar"]
 
@@ -114,13 +118,13 @@ game = Ursina()
 client = scoket_client()
 
 def on_begin():
-	global recived_dock
-	Main_menu_back.enabled = False
-	current_dock[0]=(cards((-1.5,0,10), int(recived_dock[0]),0,0))
-	current_dock[1]=(cards((-0.5,0,10), int(recived_dock[1]),0,1))
-	current_dock[2]=(cards((0.5,0,10), int(recived_dock[2]),0,2))
-	current_dock[3]=(cards((1.5,0,10), int(recived_dock[3]),0,3))
-	table = Entity(model="table", position=Vec3(0,-2.8,10), texture="tabletop.png")
+    global recived_dock
+    Main_menu_back.enabled = False
+    current_dock[0]=(cards((-1.5,0,10), int(recived_dock[0]),0,0))
+    current_dock[1]=(cards((-0.5,0,10), int(recived_dock[1]),0,1))
+    current_dock[2]=(cards((0.5,0,10), int(recived_dock[2]),0,2))
+    current_dock[3]=(cards((1.5,0,10), int(recived_dock[3]),0,3))
+    table = Entity(model="table", position=Vec3(0,-2.8,10), texture="tabletop.png")
 
 def reset_menu_UI():
     Main_menu_host.enabled = False
@@ -145,6 +149,7 @@ def show_main_menu():
 def join_function():
     client.connect()
     x = threading.Thread(target=multiplayer_thread, args=())
+    time.sleep(0.1)
     x.start()
     on_begin()
 
@@ -162,23 +167,23 @@ def multiplayer_thread():
     global send_card, recived_dock, testing
     testing = False
     while True:
-        print("im still here")
         try:
-            print("before data recive")
             data = client.recive_data()
-            print("after data revcive")
+            print(pickle.loads(data))
         except socket.error as e:
             print(e)
             data = None
         if data:
             print(pickle.loads(data))
             data = pickle.loads(data)
+            g_data = data
             if data[0] == 1:
                 connected_ID = data[2]
                 recived_dock = data[1]
                 print(type(recived_dock[1]))
-            if data[0] == 2:
+            if data[0] == 2 and data[1] == connected_ID:
                 send_card = True
+
 
 
 
@@ -204,6 +209,9 @@ back_text = Text(parent=Main_menu_go_back, text = "back", position=(-0.15, 0.1, 
 Main_menu_host.enabled = False
 Main_menu_join.enabled = False
 Main_menu_go_back.enabled = False
+
+your_turn_text = Text(text = "your turn", position=(-.5,0.5,0), color=color.green)
+your_turn_text.enabled = False
 
 #For god sake button text is glitched. So we define our own
 start_text = Text(parent=Main_menu_start, text = "StARt", position=(-0.15, 0.1, 0), scale=5)
