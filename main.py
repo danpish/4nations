@@ -15,7 +15,7 @@ testing = False
 g_data = None
 
 def card_movement_diagram(value):
-    return (value - 1.6)**3 * (1/8) + 0.5
+	return (value - 1.6)**3 * (1/8) + 0.5
 
 def update():
     global camera_position_z
@@ -118,24 +118,29 @@ game = Ursina()
 client = scoket_client()
 
 def on_begin():
-    global recived_dock
-    Main_menu_back.enabled = False
-    current_dock[0]=(cards((-1.5,0,10), int(recived_dock[0]),0,0))
-    current_dock[1]=(cards((-0.5,0,10), int(recived_dock[1]),0,1))
-    current_dock[2]=(cards((0.5,0,10), int(recived_dock[2]),0,2))
-    current_dock[3]=(cards((1.5,0,10), int(recived_dock[3]),0,3))
-    table = Entity(model="table", position=Vec3(0,-2.8,10), texture="tabletop.png")
+	global recived_dock
+	Main_menu_back.enabled = False
+	current_dock[0]=(cards((-1.5,0,10), int(recived_dock[0]),0,0))
+	current_dock[1]=(cards((-0.5,0,10), int(recived_dock[1]),0,1))
+	current_dock[2]=(cards((0.5,0,10), int(recived_dock[2]),0,2))
+	current_dock[3]=(cards((1.5,0,10), int(recived_dock[3]),0,3))
+	table = Entity(model="table", position=Vec3(0,-2.8,10), texture="tabletop.png")
 
 def reset_menu_UI():
     Main_menu_host.enabled = False
     Main_menu_join.enabled = False
+    Main_menu_text.enabled = False
     Main_menu_go_back.enabled = False
     Main_menu_start.enabled = False
     Main_menu_settings.enabled = False
     Main_menu_exit.enabled = False
 
+    Settings_menu_title.enabled = False
+    Settings_menu_back.enabled = False
+
 def on_start():
     reset_menu_UI()
+    Main_menu_text.enabled = True
     Main_menu_host.enabled = True
     Main_menu_join.enabled = True
     Main_menu_go_back.enabled = True
@@ -143,8 +148,15 @@ def on_start():
 def show_main_menu():
     reset_menu_UI()
     Main_menu_start.enabled = True
+    Main_menu_text.enabled = True
     Main_menu_settings.enabled = True
     Main_menu_exit.enabled = True
+
+def open_settings_menu():
+    reset_menu_UI()
+    Settings_menu_title.enabled = True
+    Settings_menu_back.enabled = True
+
 
 def join_function():
     client.connect()
@@ -209,6 +221,12 @@ back_text = Text(parent=Main_menu_go_back, text = "back", position=(-0.15, 0.1, 
 Main_menu_host.enabled = False
 Main_menu_join.enabled = False
 Main_menu_go_back.enabled = False
+Settings_menu_title = Text(parent=Main_menu_back, text="Settings", position=(0,0.4,-.1))
+Settings_menu_back = Button(parent=Main_menu_back, scale=(.2,.05),position=(0,-.3,-.1))
+Settings_menu_back_title = Text(parent=Settings_menu_back, text="BACK", scale = (5,20),position = (-.2,.2,0))
+Settings_menu_title.enabled = False
+Settings_menu_back.enabled = False
+
 
 your_turn_text = Text(text = "your turn", position=(-.5,0.5,0), color=color.green)
 your_turn_text.enabled = False
@@ -224,5 +242,12 @@ Main_menu_start.on_click = on_start
 Main_menu_join.on_click = test_function
 Main_menu_host.on_click = join_function
 Main_menu_go_back.on_click = show_main_menu
+Main_menu_settings.on_click = open_settings_menu
+Settings_menu_back.on_click = show_main_menu
+
+
+
+
+
 Sky()
 game.run()
