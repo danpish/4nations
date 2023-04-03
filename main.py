@@ -28,6 +28,7 @@ def update():
         your_turn_text.enabled = g_data[1] == connected_ID
 
 textures = ["ir", "fr", "am", "ar"]
+card_textures = ["iran", "france", "armenia", "argentina"]
 
 class scoket_client():
     def __init__(self, sock=None, addr = "127.0.0.1", port = 8008):
@@ -53,7 +54,7 @@ class scoket_client():
 
 class cards(Entity):
     def __init__(self, position, ido, xpos, slot_position):
-        global textures
+        global textures,card_mode, card_textures
         super().__init__(
             parent = scene,
             position = position,
@@ -64,13 +65,18 @@ class cards(Entity):
             xpos = xpos,
             slot_position = slot_position
         )
+        if card_mode == "card":
+            self.model = "quad"
+            self.collider = "cube"
+            self.texture = card_textures[self.idi]
     def update(self):
-        global is_mouse_down, was_mouse_down, send_card
+        global is_mouse_down, was_mouse_down, send_card, card_mode
 
         if held_keys['r']:
             self.xpos = 0
         movement_speed = 4 * time.dt
-        self.rotation = Vec3(0,self.rotation.y + (movement_speed * 16),0)
+        if card_mode == "round":
+            self.rotation = Vec3(0,self.rotation.y + (movement_speed * 16),0)
         if self.hovered:
             if self.xpos < 1.0:
                 self.xpos += movement_speed
@@ -262,7 +268,7 @@ Settings_menu_back_title = Text(parent=Settings_menu_back, text="BACK", scale = 
 Settings_menu_card_button = Button(parent=Main_menu_back, scale=.2,position=(0.3,0.1,-0.1))
 Settings_menu_card_title = Text(parent=Main_menu_back,position=(-.3,0.1,-.1),text="Card mode")
 Settings_menu_card_stat = Text(parent=Settings_menu_card_button,scale = 5,position=(-.3,0,-.1),text=card_mode)
-Settings_menu_music = Button(parent=Main_menu_back, scale=.2,position=(0.3,-0.1,-0.1))
+Settings_menu_music = Button(parent=Main_menu_back, scale=.2,position=(0.3,-0.1,-0.1),color=color.red)
 Settings_menu_music_title = Text(parent=Main_menu_back,position=(-.3,-0.1,-.1),text="music")
 Settings_menu_super = Button(parent=Main_menu_back, scale=.2,position=(0.3,-0.3,-0.1))
 Settings_menu_super_title = Text(parent=Main_menu_back,position=(-.3,-0.3,-.1),text="Super mode")
