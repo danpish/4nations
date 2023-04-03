@@ -13,6 +13,8 @@ send_card = False
 connected_ID = 255
 testing = False
 g_data = None
+card_mode = "round" #Options = round , card
+music_enabled = False
 
 def card_movement_diagram(value):
 	return (value - 1.6)**3 * (1/8) + 0.5
@@ -137,6 +139,15 @@ def reset_menu_UI():
 
     Settings_menu_title.enabled = False
     Settings_menu_back.enabled = False
+    Settings_menu_card_button.enabled = False
+    Settings_menu_card_title.enabled = False
+    Settings_menu_card_stat.enabled = False
+    Settings_menu_music.enabled = False
+    Settings_menu_music_title.enabled = False
+    Settings_menu_super.enabled = False
+    Settings_menu_super_title.enabled = False
+    Settings_menu_super_stat.enabled = False
+
 
 def on_start():
     reset_menu_UI()
@@ -156,7 +167,30 @@ def open_settings_menu():
     reset_menu_UI()
     Settings_menu_title.enabled = True
     Settings_menu_back.enabled = True
+    Settings_menu_card_button.enabled = True
+    Settings_menu_card_title.enabled = True
+    Settings_menu_card_stat.enabled = True
+    Settings_menu_music.enabled = True
+    Settings_menu_music_title.enabled = True
+    Settings_menu_super.enabled = True
+    Settings_menu_super_title.enabled = True
+    Settings_menu_super_stat.enabled = True
 
+
+def card_mode_change():
+    global card_mode
+    if card_mode == "round":
+        card_mode = "card"
+    else:
+        card_mode = "round"
+    Settings_menu_card_stat.text = card_mode
+
+def music_mode_change():
+    global music_enabled
+    music_enabled = not music_enabled
+    Settings_menu_music.color = color.red
+    if music_enabled:
+        Settings_menu_music.color = color.green
 
 def join_function():
     client.connect()
@@ -224,9 +258,29 @@ Main_menu_go_back.enabled = False
 Settings_menu_title = Text(parent=Main_menu_back, text="Settings", position=(0,0.4,-.1))
 Settings_menu_back = Button(parent=Main_menu_back, scale=(.2,.05),position=(0,-.3,-.1))
 Settings_menu_back_title = Text(parent=Settings_menu_back, text="BACK", scale = (5,20),position = (-.2,.2,0))
+
+Settings_menu_card_button = Button(parent=Main_menu_back, scale=.2,position=(0.3,0.1,-0.1))
+Settings_menu_card_title = Text(parent=Main_menu_back,position=(-.3,0.1,-.1),text="Card mode")
+Settings_menu_card_stat = Text(parent=Settings_menu_card_button,scale = 5,position=(-.3,0,-.1),text=card_mode)
+Settings_menu_music = Button(parent=Main_menu_back, scale=.2,position=(0.3,-0.1,-0.1))
+Settings_menu_music_title = Text(parent=Main_menu_back,position=(-.3,-0.1,-.1),text="music")
+Settings_menu_super = Button(parent=Main_menu_back, scale=.2,position=(0.3,-0.3,-0.1))
+Settings_menu_super_title = Text(parent=Main_menu_back,position=(-.3,-0.3,-.1),text="Super mode")
+Settings_menu_super_stat = Text(parent=Settings_menu_super,scale = 5,position=(-.3,0,-.1),text="Never")
+
 Settings_menu_title.enabled = False
 Settings_menu_back.enabled = False
+Settings_menu_card_button.enabled = False
+Settings_menu_card_title.enabled = False
+Settings_menu_card_stat.enabled = False
+Settings_menu_music.enabled = False
+Settings_menu_music_title.enabled = False
+Settings_menu_super.enabled = False
+Settings_menu_super_title.enabled = False
+Settings_menu_super_stat.enabled = False
 
+Settings_menu_music.on_click = music_mode_change
+Settings_menu_card_button.on_click = card_mode_change
 
 your_turn_text = Text(text = "your turn", position=(-.5,0.5,0), color=color.green)
 your_turn_text.enabled = False
