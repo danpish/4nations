@@ -20,12 +20,15 @@ def card_movement_diagram(value):
 	return (value - 1.6)**3 * (1/8) + 0.5
 
 def update():
-    global camera_position_z
+    global camera_position_z,g_data
     camera_position_z = 0
     camera.position = (0,0,camera_position_z)
     if g_data:
-        print(g_data)
+        print(f"{g_data} {connected_ID}")
         your_turn_text.enabled = g_data[1] == connected_ID
+        send_card = g_data[1] == connected_ID
+    else:
+        send_card = False
 
 textures = ["ir", "fr", "am", "ar"]
 card_textures = ["iran", "france", "armenia", "argentina"]
@@ -34,6 +37,7 @@ class scoket_client():
     def __init__(self, sock=None, addr = "127.0.0.1", port = 8008):
         if sock == None:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         else:
             self.sock = sock
         #self.sock.setblocking(0) GOD HELP
@@ -45,7 +49,7 @@ class scoket_client():
         #Clean code! Am I doing this correctly?
 
     def send_data(self, data):
-        to_send_data = data.encode()
+        to_send_data = pickle.loads(data)
         self.sock.send(to_send_data)
 
     def recive_data(self):
@@ -112,7 +116,7 @@ class cards(Entity):
                     do_delete = True
                 if not testing:
                     if do_delete and send_card:
-                        client.send_data(self.idi)
+                        client.send_data([self.idi, connected_ID])
                         msg = pickle.loads(recive_data())
                         if msg:
                             if msg[0] == 22:
@@ -126,13 +130,14 @@ game = Ursina()
 client = scoket_client()
 
 def on_begin():
-	global recived_dock
-	Main_menu_back.enabled = False
-	current_dock[0]=(cards((-1.5,0,10), int(recived_dock[0]),0,0))
-	current_dock[1]=(cards((-0.5,0,10), int(recived_dock[1]),0,1))
-	current_dock[2]=(cards((0.5,0,10), int(recived_dock[2]),0,2))
-	current_dock[3]=(cards((1.5,0,10), int(recived_dock[3]),0,3))
-	table = Entity(model="table", position=Vec3(0,-2.8,10), texture="tabletop.png")
+    global recived_dock
+    time.sleep(0.1)
+    Main_menu_back.enabled = False
+    current_dock[0]=(cards((-1.5,0,10), int(recived_dock[0]),0,0))
+    current_dock[1]=(cards((-0.5,0,10), int(recived_dock[1]),0,1))
+    current_dock[2]=(cards((0.5,0,10), int(recived_dock[2]),0,2))
+    current_dock[3]=(cards((1.5,0,10), int(recived_dock[3]),0,3))
+    table = Entity(model="table", position=Vec3(0,-2.8,10), texture="tabletop.png")
 
 def reset_menu_UI():
     Main_menu_host.enabled = False
@@ -216,25 +221,31 @@ def single_player_test():
     send_card = True
 
 def multiplayer_thread():
-    global send_card, recived_dock, testing
+    global send_card, recived_dock, testing, connected_ID
     testing = False
     while True:
+        #time.sleep(0.1)
         try:
             data = client.recive_data()
-            print(pickle.loads(data))
+            #print(pickle.loads(data))
         except socket.error as e:
             print(e)
             data = None
         if data:
-            print(pickle.loads(data))
-            data = pickle.loads(data)
-            g_data = data
-            if data[0] == 1:
-                connected_ID = data[2]
-                recived_dock = data[1]
-                print(type(recived_dock[1]))
-            if data[0] == 2 and data[1] == connected_ID:
-                send_card = True
+            try:
+                print(f"{pickle.loads(data)} {connected_ID}")
+                data = pickle.loads(data)
+                g_data = data
+                if data[0] == 1:
+                    connected_ID = data[2]
+                    recived_dock = data[1]
+                    print(type(recived_dock[1]))
+                """
+                if data[0] == 2 and data[1] == connected_ID:
+                    send_card = True
+                """
+            except:
+                print("for some fucking reason, pickle failed")
 
 
 
