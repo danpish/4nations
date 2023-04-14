@@ -1,18 +1,13 @@
 add:
 	multiplayer
 	pause menu
-	settings menu
 	add marker(anything that player can get to earn victory)
 	add battle UI**relies on network bringup**
 	add country selectio menu**relies on network bringup**
 fix/improve:
 	settings:
 		speed of cards rotation(If sphere mode is activated)
-		shape of cards
 		fullscreened?
 		language(If supported by ursina)
 	*Ignores*:
 		improve normal card texture*Ignore*
-		change card storing system*Ignore*
-	
-	
