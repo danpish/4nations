@@ -20,11 +20,11 @@ def card_movement_diagram(value):
 	return (value - 1.6)**3 * (1/8) + 0.5
 
 def update():
-    global camera_position_z,g_data
+    global camera_position_z,g_data,send_card
     camera_position_z = 0
     camera.position = (0,0,camera_position_z)
     if g_data:
-        print(f"{g_data} {connected_ID}")
+        #print(f"{g_data} {connected_ID}")
         your_turn_text.enabled = g_data[1] == connected_ID
         send_card = g_data[1] == connected_ID
     else:
@@ -49,12 +49,15 @@ class scoket_client():
         #Clean code! Am I doing this correctly?
 
     def send_data(self, data):
-        to_send_data = pickle.loads(data)
+        to_send_data = pickle.dumps(data)
         self.sock.send(to_send_data)
 
     def recive_data(self):
         data = self.sock.recv(8126)
         return data
+
+client = scoket_client()
+
 
 class cards(Entity):
     def __init__(self, position, ido, xpos, slot_position):
@@ -117,17 +120,19 @@ class cards(Entity):
                 if not testing:
                     if do_delete and send_card:
                         client.send_data([self.idi, connected_ID])
-                        msg = pickle.loads(recive_data())
+                        print("i should send data")
+                        msg = pickle.loads(client.recive_data())
                         if msg:
                             if msg[0] == 22:
                                 send_card = False
                                 self.disable()
+                            elif msg[0] == 21:
+                                print("not your turn")
                 else:
                     self.disable()
 
 game = Ursina()
 
-client = scoket_client()
 
 def on_begin():
     global recived_dock
@@ -219,9 +224,10 @@ def single_player_test():
     global testing, send_card
     testing = True
     send_card = True
+    time.sleep(0.5)
 
 def multiplayer_thread():
-    global send_card, recived_dock, testing, connected_ID
+    global send_card, recived_dock, testing, connected_ID, g_data
     testing = False
     while True:
         #time.sleep(0.1)
@@ -233,7 +239,7 @@ def multiplayer_thread():
             data = None
         if data:
             try:
-                print(f"{pickle.loads(data)} {connected_ID}")
+                #print(f"{pickle.loads(data)} {connected_ID}")
                 data = pickle.loads(data)
                 g_data = data
                 if data[0] == 1:
@@ -245,7 +251,7 @@ def multiplayer_thread():
                     send_card = True
                 """
             except:
-                print("for some fucking reason, pickle failed")
+                print("for some stupid reason, pickle failed")
 
 
 

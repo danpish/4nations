@@ -10,6 +10,7 @@ server.listen()
 conn = []
 addr = []
 g_data = None
+reciver_threads = [None,None,None,None]
 """
 	country codes
 	IR = 0
@@ -46,10 +47,10 @@ def join_all_players():
             print("we are all in")
             all_players_in = True
 
-def reciver():#kind of pathetic. but you got to do what you got to do
+def reciver(recive_from):#kind of pathetic. but you got to do what you got to do
     global g_data,conn
-    for x in range(len(conn)):
-        l_data = conn[x].recv(1024)
+    print(type(recive_from))
+    l_data = conn[recive_from].recv(1024)
     if l_data:
         g_data = pickle.loads(l_data)
 
@@ -61,19 +62,36 @@ def send_to_all(message):
 def play():
     global players, player_list, conn, addr, g_data
     current_player = 0
-    x = threading.Thread(target=reciver, args=())
-    x.start()
+    answered_player = 0
     did_player_answer = False
     while True:
+        if not reciver_threads[current_player]:
+            c_thread = threading.Thread(target=reciver, args=([current_player]))
+            reciver_threads[current_player] = c_thread
+            c_thread = None
+            reciver_threads[current_player].start()
+        
         did_player_answer = False
         print("now asking pkayer " + f"{current_player}")
         while not did_player_answer:
             send_to_all(pickle.dumps([2,current_player]))
             #conn.send(pickle.dumps([2,current_player]))
             if g_data:
-                if g_data[1] == current_player:
-                    players[current_player].remove(g_data[0])
+                for threads in range(len(reciver_threads)):
+                    reciver_threads[threads].stop()
+                    reciver_threads[threads] = None
+                c_data = g_data
+                print("got some data from ", end="")
+                if c_data[1] == current_player:
+                    print(f"player {g_data[1]}")
+                    players[current_player].remove(c_data[0])
                     conn[current_player].send(pickle.dumps([22]))
+                    did_player_answer = True
+                elif c_data != current_player:
+                    print(f"player {answered_player}")
+                    conn[answered_player].send(pickle.loads([21]))
+                else:
+                    print("unknown")
         current_player += 1
         if current_player > 4:
             current_player -= 4
