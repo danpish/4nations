@@ -1,13 +1,22 @@
+alpha
 add:
-	multiplayer
 	pause menu
 	add marker(anything that player can get to earn victory)
 	add battle UI**relies on network bringup**
 	add country selectio menu**relies on network bringup**
 fix/improve:
+	clean the sh****y code
+	fix flags being clicked when the mouse is not on screen on the moment of joining the game
+	recive cards when sent
 	settings:
 		speed of cards rotation(If sphere mode is activated)
 		fullscreened?
 		language(If supported by ursina)
 	*Ignores*:
 		improve normal card texture*Ignore*
+
+beta
+add:
+	finish alpha first
+	improve look and feel
+	add optimization settings

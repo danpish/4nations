@@ -86,7 +86,7 @@ class cards(Entity):
             self.texture = card_textures[self.idi]
 
     def update(self):
-        global is_mouse_down, was_mouse_down, send_card, card_mode, g_data, do_delete_card
+        global is_mouse_down, was_mouse_down, send_card, card_mode, g_data, do_delete_card, connected_ID
 
         if held_keys["r"]:
             self.xpos = 0
@@ -133,9 +133,10 @@ class cards(Entity):
                 if not testing:
                     if do_delete and send_card:
                         client.send_data([self.idi, connected_ID])
-                        print("i should send data")
+                        print(f"i should send data and my ID is : {connected_ID}")
                         while do_delete_card == 0:
-                            print("waiting for server resoinse")
+                            time.sleep(0.05)
+                            print(f"client side do_send_card = {do_delete_card}")
                         if do_delete_card:
                             if do_delete_card == 1:
                                 send_card = False
@@ -143,7 +144,7 @@ class cards(Entity):
                                 self.disable()
                             elif do_delete_card == 2:
                                 print("not your turn")
-                                do_delete_card = 0
+                                send_card = False
                 else:
                     self.disable()
 
@@ -248,42 +249,38 @@ def single_player_test():
     global testing, send_card
     testing = True
     send_card = True
-    time.sleep(0.5)
+    time.sleep(0.5)#Increase performance hopefully
 
 
 def multiplayer_thread():
-    global send_card, recived_dock, testing, connected_ID, g_data
+    global send_card, recived_dock, testing, connected_ID, g_data, do_delete_card
     testing = False
     while True:
-        # time.sleep(0.1)
         try:
             data = client.recive_data()
-            # print(pickle.loads(data))
         except socket.error as e:
             print(e)
             data = None
         if data:
             try:
-                # print(f"{pickle.loads(data)} {connected_ID}")
                 data = pickle.loads(data)
                 g_data = data
                 if data[0] == 1:
                     connected_ID = data[2]
                     recived_dock = data[1]
-                    print(type(recived_dock[1]))
-                """
-                if data[0] == 2 and data[1] == connected_ID:
-                    send_card = True
-                """
                 if send_card:
+                    print(data[0])
                     if data[0] == 22:
                         do_delete_card = 1
+                        time.sleep(0.2)
                     elif data[0] == 21:
                         do_delete_card = 2
+                    print(f"server side do_send_data = {do_delete_card}")
                 else:
                     do_delete_card = 0
             except:
-                print("for some stupid reason, pickle failed")
+                #print("for some stupid reason, pickle failed")
+                pass
 
 
 window.isfullscreen = False

@@ -1,6 +1,7 @@
 import socket
 import pickle
 import threading
+import time
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)#TCP connection(again hopefully)
 server.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 server_address = ""#automatic? maybe?
@@ -56,12 +57,11 @@ def reciver(recive_from):#kind of pathetic. but you got to do what you got to do
     while not l_data and not recived_data:
         try:    
             l_data = conn[recive_from].recv(1024)
-        except:
-            print("something happened.timeout maybe?")
+        except socket.error as e:
+            print(f"{e}")
     if l_data:
         g_data = pickle.loads(l_data)
     
-
 def send_to_all(message):
     global conn
     for x in range(len(conn)):
@@ -80,24 +80,23 @@ def play():
             reciver_threads[current_player].start()
         
         did_player_answer = False
-        print("now asking pkayer " + f"{current_player}")
+        print("now asking player " + f"{current_player}")
         while not did_player_answer:
             send_to_all(pickle.dumps([2,current_player]))
-            print(current_player)
-            #conn.send(pickle.dumps([2,current_player]))
             if g_data:
+                c_data = g_data
                 for threads in range(len(reciver_threads)):
                     reciver_threads[threads] = None
-                c_data = g_data
-                print("got some data from ", end="")
                 if c_data[1] == current_player:
+                    print("got some data from ", end="")
                     print(f"player {g_data[1]}")
                     players[current_player].remove(c_data[0])
-                    send_to_all(pickle.dumps([22]))
+                    conn[c_data[1]].send(pickle.dumps([22]))
+                    print(f"sent confirmation to player {c_data[1]}")
                     did_player_answer = True
-                elif c_data != current_player:
-                    print(f"player {c_data[1]}")
-                    send_to_all(pickle.dumps([21]))
+                elif c_data[1] != current_player:
+                    #print(f"wrong player player {c_data[1]}")
+                    conn[c_data[1]].send(pickle.dumps([21]))
                 else:
                     print("unknown")
         current_player += 1
