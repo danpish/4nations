@@ -1,7 +1,6 @@
 """
 Network test
 """
-from ursina import *
 import socket
 import pickle
 import threading
