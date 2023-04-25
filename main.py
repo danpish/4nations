@@ -7,16 +7,17 @@ import pickle
 import threading
 import time
 
-current_dock = [1, 2, 3, 0, 0]
-recived_dock = [1, 2, 3, 0, 0]
+current_dock = [1, 2, 3, 0, 0]#Dock data currently in the client
+recived_dock = [1, 2, 3, 0, 0]#Dock data recived from the server
+
 was_mouse_down = True
-send_card = False
+send_card = False#Global card sending permision
 connected_ID = 255
 testing = False
 g_data = None
 card_mode = "round"  # Options = round , card
 music_enabled = False
-do_delete_card = 0
+do_delete_card = 0#Values = 0(invalid)/ 2(correct)/ 1(incorrect)
 
 
 def card_movement_diagram(value):
@@ -28,16 +29,15 @@ def update():
     camera_position_z = 0
     camera.position = (0, 0, camera_position_z)
     if g_data:
-        # print(f"{g_data} {connected_ID}")
-        if len(g_data) > 1:
+        if len(g_data) > 1:#be sure its not confirmation message
             your_turn_text.enabled = g_data[1] == connected_ID
             send_card = g_data[1] == connected_ID
     else:
         send_card = False
 
 
-textures = ["ir", "fr", "am", "ar"]
-card_textures = ["iran", "france", "armenia", "argentina"]
+textures = ["ir", "fr", "am", "ar"]#coutery BALL texture
+card_textures = ["iran", "france", "armenia", "argentina"]#countery CARDS texture
 
 
 class scoket_client:
@@ -47,7 +47,6 @@ class scoket_client:
             self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         else:
             self.sock = sock
-        # self.sock.setblocking(0) GOD HELP
         self.addr = "127.0.0.1"
         self.port = 8008
 
@@ -148,9 +147,7 @@ class cards(Entity):
                 else:
                     self.disable()
 
-
 game = Ursina()
-
 
 def on_begin():
     global recived_dock
@@ -162,9 +159,8 @@ def on_begin():
     current_dock[3] = cards((1.5, 0, 10), int(recived_dock[3]), 0, 3)
     table = Entity(model="table", position=Vec3(0, -2.8, 10), texture="tabletop.png")
 
-
 def reset_menu_UI():
-    Main_menu_host.enabled = False
+    Main_menu_test.enabled = False
     Main_menu_join.enabled = False
     Main_menu_text.enabled = False
     Main_menu_go_back.enabled = False
@@ -187,7 +183,7 @@ def reset_menu_UI():
 def on_start():
     reset_menu_UI()
     Main_menu_text.enabled = True
-    Main_menu_host.enabled = True
+    Main_menu_test.enabled = True
     Main_menu_join.enabled = True
     Main_menu_go_back.enabled = True
 
@@ -213,7 +209,6 @@ def open_settings_menu():
     Settings_menu_super_title.enabled = True
     Settings_menu_super_stat.enabled = True
 
-
 def card_mode_change():
     global card_mode
     if card_mode == "round":
@@ -221,7 +216,6 @@ def card_mode_change():
     else:
         card_mode = "round"
     Settings_menu_card_stat.text = card_mode
-
 
 def music_mode_change():
     global music_enabled
@@ -279,7 +273,6 @@ def multiplayer_thread():
                 else:
                     do_delete_card = 0
             except:
-                #print("for some stupid reason, pickle failed")
                 pass
 
 
@@ -296,15 +289,16 @@ Main_menu_start = Button(parent=Main_menu_back, scale=0.2, position=(0, 0.1, -0.
 Main_menu_settings = Button(parent=Main_menu_back, scale=0.2, position=(0, -0.1, -0.1))
 Main_menu_exit = Button(parent=Main_menu_back, scale=0.2, position=(0, -0.3, -0.1))
 # join and host options
-Main_menu_host = Button(parent=Main_menu_back, scale=0.2, position=(0, 0.1, -0.1))
-Main_menu_join = Button(parent=Main_menu_back, scale=0.2, position=(0, -0.1, -0.1))
+Main_menu_join = Button(parent=Main_menu_back, scale=0.2, position=(0, 0.1, -0.1))
+Main_menu_test = Button(parent=Main_menu_back, scale=0.2, position=(0, -0.1, -0.1))
 Main_menu_go_back = Button(parent=Main_menu_back, scale=0.2, position=(0, -0.3, -0.1))
 join_text = Text(parent=Main_menu_join, text="join", position=(-0.15, 0.1, 0), scale=5)
-host_text = Text(parent=Main_menu_host, text="host", position=(-0.15, 0.1, 0), scale=5)
+test_text = Text(parent=Main_menu_test, text="test", position=(-0.15, 0.1, 0), scale=5)
 back_text = Text(parent=Main_menu_go_back, text="back", position=(-0.15, 0.1, 0), scale=5)
-Main_menu_host.enabled = False
+Main_menu_test.enabled = False
 Main_menu_join.enabled = False
 Main_menu_go_back.enabled = False
+#settings buttons and functions
 Settings_menu_title = Text(parent=Main_menu_back, text="Settings", position=(0, 0.4, -0.1))
 Settings_menu_back = Button(parent=Main_menu_back, scale=(0.2, 0.05), position=(0, -0.3, -0.1))
 Settings_menu_back_title = Text(
@@ -338,9 +332,8 @@ exit_text = Text(parent=Main_menu_exit, text="EXIt", position=(-0.15, 0.1, 0), s
 
 Main_menu_exit.on_click = application.quit
 Main_menu_start.on_click = on_start
-# Main_menu_join.on_click = lambda:on_begin([0,1,2,3])
-Main_menu_join.on_click = test_function
-Main_menu_host.on_click = join_function
+Main_menu_join.on_click = join_function
+Main_menu_test.on_click = test_function
 Main_menu_go_back.on_click = show_main_menu
 Main_menu_settings.on_click = open_settings_menu
 Settings_menu_back.on_click = show_main_menu
