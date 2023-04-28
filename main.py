@@ -10,6 +10,7 @@ import time
 current_dock = [1, 2, 3, 0, 0]#Dock data currently in the client
 recived_dock = [1, 2, 3, 0, 0]#Dock data recived from the server
 
+is_mouse_down = False
 was_mouse_down = True
 send_card = False#Global card sending permision
 connected_ID = 255
@@ -37,7 +38,7 @@ def update():
 
 
 textures = ["ir", "fr", "am", "ar"]#coutery BALL texture
-card_textures = ["iran", "france", "armenia", "argentina"]#countery CARDS texture
+card_textures = ["iran_card", "france_card", "armenia_card", "argentina_card"]#countery CARDS texture
 
 
 class scoket_client:
@@ -83,6 +84,7 @@ class cards(Entity):
             self.model = "quad"
             self.collider = "cube"
             self.texture = card_textures[self.idi]
+            self.scale = (1,2,1)
 
     def update(self):
         global is_mouse_down, was_mouse_down, send_card, card_mode, g_data, do_delete_card, connected_ID
@@ -104,7 +106,7 @@ class cards(Entity):
             self.xpos = 5.0
         self.position = (
             self.position.x,
-            card_movement_diagram(self.xpos),
+            card_movement_diagram(self.xpos) + (int(card_mode == "card") * 0.5),
             self.position.z,
         )
         if self.hovered:
@@ -149,6 +151,11 @@ class cards(Entity):
 
 game = Ursina()
 
+def click_fixer():#hilarious fix I know
+    global is_mouse_down, was_mouse_down
+    time.sleep(0.1)
+    is_mouse_down, was_mouse_down = False, True
+
 def on_begin():
     global recived_dock
     time.sleep(0.1)
@@ -158,6 +165,8 @@ def on_begin():
     current_dock[2] = cards((0.5, 0, 10), int(recived_dock[2]), 0, 2)
     current_dock[3] = cards((1.5, 0, 10), int(recived_dock[3]), 0, 3)
     table = Entity(model="table", position=Vec3(0, -2.8, 10), texture="tabletop.png")
+    fix_click_on_start = threading.Thread(target=click_fixer, args=())
+    fix_click_on_start.start()
 
 def reset_menu_UI():
     Main_menu_test.enabled = False
