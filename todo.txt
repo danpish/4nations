@@ -5,15 +5,12 @@ add:
 	add battle UI**relies on network bringup**
 	add country selectio menu**relies on network bringup**
 fix/improve:
-	clean the sh****y code
-	fix flags being clicked when the mouse is not on screen on the moment of joining the game
+	clean the sh****y code *ongoing*
 	recive cards when sent
 	settings:
 		speed of cards rotation(If sphere mode is activated)
 		fullscreened?
 		language(If supported by ursina)
-	*Ignores*:
-		improve normal card texture*Ignore*
 
 beta
 add:
