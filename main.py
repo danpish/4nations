@@ -10,6 +10,7 @@ import time
 current_dock = [1, 2, 3, 0, 0]#Dock data currently in the client
 recived_dock = [1, 2, 3, 0, 0]#Dock data recived from the server
 
+debugging_enabled = False
 is_mouse_down = False
 was_mouse_down = True
 send_card = False#Global card sending permision
@@ -53,7 +54,6 @@ class scoket_client:
 
     def connect(self):
         self.sock.connect((self.addr, self.port))
-        # Clean code! Am I doing this correctly?
 
     def send_data(self, data):
         to_send_data = pickle.dumps(data)
@@ -63,9 +63,7 @@ class scoket_client:
         data = self.sock.recv(8126)
         return data
 
-
 client = scoket_client()
-
 
 class cards(Entity):
     def __init__(self, position, ido, xpos, slot_position):
@@ -87,7 +85,7 @@ class cards(Entity):
             self.scale = (1,2,1)
 
     def update(self):
-        global is_mouse_down, was_mouse_down, send_card, card_mode, g_data, do_delete_card, connected_ID
+        global is_mouse_down, was_mouse_down, send_card, card_mode, g_data, do_delete_card, connected_ID, debugging_enabled
 
         if held_keys["r"]:
             self.xpos = 0
@@ -119,35 +117,45 @@ class cards(Entity):
             if not is_mouse_down and not was_mouse_down:
                 was_mouse_down = True
                 do_delete = False
-                if self.position.x == -1.5 and current_dock[0] != "":
-                    current_dock[0] = ""
-                    do_delete = True
-                elif self.position.x == -0.5 and current_dock[1] != "":
-                    current_dock[1] = ""
-                    do_delete = True
-                elif self.position.x == 0.5 and current_dock[2] != "":
-                    current_dock[2] = ""
-                    do_delete = True
-                elif self.position.x == 1.5 and current_dock[3] != "":
-                    current_dock[3] = ""
+                
+                if debugging_enabled:
+                    #card position status(replace if you want)
+                    print(self.position.x)
+                    print(self.position.x == -1.6)
+                    print(self.position.x == -0.5)
+                    print(self.position.x == 0.5)
+                    print(self.position.x == 1.6)
+                if current_dock[self.slot_position] != "":
                     do_delete = True
                 if not testing:
                     if do_delete and send_card:
-                        client.send_data([self.idi, connected_ID])
-                        print(f"i should send data and my ID is : {connected_ID}")
+                        client.send_data([self.slot_position, connected_ID])
+                        if debugging_enabled:
+                            print(f"i should send data and my ID is : {connected_ID}")
                         while do_delete_card == 0:
-                            time.sleep(0.05)
-                            print(f"client side do_send_card = {do_delete_card}")
+                            if debugging_enabled:
+                                time.sleep(0.05)
+                                print(f"client side do_send_card = {do_delete_card}")
                         if do_delete_card:
                             if do_delete_card == 1:
                                 send_card = False
                                 print("done")
+                                current_dock[self.slot_position] = ""
                                 self.disable()
                             elif do_delete_card == 2:
                                 print("not your turn")
                                 send_card = False
                 else:
-                    self.disable()
+                    if do_delete:
+                        if debugging_enabled:
+                            #for debugging showing if there is a card in a slot
+                            #not showing the entier information.
+                            dock_status = [False, False, False, False]
+                            for cards_in_deck in range(4):
+                                if current_dock[cards_in_deck] != "":
+                                    dock_status[cards_in_deck] = True
+                            print(dock_status)
+                        self.disable()
 
 game = Ursina()
 
@@ -160,13 +168,32 @@ def on_begin():
     global recived_dock
     time.sleep(0.1)
     Main_menu_back.enabled = False
-    current_dock[0] = cards((-1.5, 0, 10), int(recived_dock[0]), 0, 0)
-    current_dock[1] = cards((-0.5, 0, 10), int(recived_dock[1]), 0, 1)
-    current_dock[2] = cards((0.5, 0, 10), int(recived_dock[2]), 0, 2)
-    current_dock[3] = cards((1.5, 0, 10), int(recived_dock[3]), 0, 3)
+    current_dock[0] = cards((-1.6, 0, 10), int(recived_dock[0]), 0, 0)
+    current_dock[1] = cards((-0.55, 0, 10), int(recived_dock[1]), 0, 1)
+    current_dock[2] = cards((0.55, 0, 10), int(recived_dock[2]), 0, 2)
+    current_dock[3] = cards((1.6, 0, 10), int(recived_dock[3]), 0, 3)
     table = Entity(model="table", position=Vec3(0, -2.8, 10), texture="tabletop.png")
     fix_click_on_start = threading.Thread(target=click_fixer, args=())
     fix_click_on_start.start()
+
+def card_added(new_card_id):
+    global current_dock
+    empty_slot = 4
+    position_placement_x = 0 
+    for cards_in_deck in range(len(current_dock) - 1):
+        if current_dock[cards_in_deck] == "":
+            empty_slot = cards_in_deck
+    if empty_slot == 0:
+        position_placement_x = -1.6
+    elif empty_slot == 1:
+        position_placement_x = -0.55
+    elif empty_slot == 2:
+        position_placement_x = 0.55
+    elif empty_slot == 3:
+        position_placement_x = 1.6
+    else:
+        position_placement_x = 2
+    current_dock[empty_slot] = cards((position_placement_x, 0, 10), new_card_id, 0, empty_slot)
 
 def reset_menu_UI():
     Main_menu_test.enabled = False
@@ -256,7 +283,7 @@ def single_player_test():
 
 
 def multiplayer_thread():
-    global send_card, recived_dock, testing, connected_ID, g_data, do_delete_card
+    global send_card, recived_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled
     testing = False
     while True:
         try:
@@ -271,14 +298,18 @@ def multiplayer_thread():
                 if data[0] == 1:
                     connected_ID = data[2]
                     recived_dock = data[1]
+                elif data[0] == 3:
+                    if debugging_enabled:
+                        print(f"recived {data}")
+                    card_added(data[1])
                 if send_card:
-                    print(data[0])
+                    #print(data[0])
                     if data[0] == 22:
                         do_delete_card = 1
                         time.sleep(0.2)
                     elif data[0] == 21:
                         do_delete_card = 2
-                    print(f"server side do_send_data = {do_delete_card}")
+                    #print(f"server side do_send_data = {do_delete_card}")
                 else:
                     do_delete_card = 0
             except:

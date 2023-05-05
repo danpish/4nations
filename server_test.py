@@ -13,6 +13,8 @@ addr = []
 g_data = None
 reciver_threads = [None,None,None,None]
 recived_data = False
+max_player = 2
+stop_sending = False
 """
     country codes
     IR = 0
@@ -20,15 +22,17 @@ recived_data = False
     FR = 2
     AM = 3
 """
-players = [[0,3,1,2],[2,1,0,3],[3,0,2,1],[1,3,2,0]]
+players = [[0,3,1,2,""],[2,1,0,3,""],[3,0,2,1,""],[1,3,2,0,""]]
 player_list = [False,False,False,False]
 all_players_in = False
 
 """
 Net functions / data[0]
-1 = get_data
-2 = recive_request
+1 = get data
+2 = recive request
 22 = DATA recived
+21 = Not accepted Data recive
+3 = Send recived card
 ... for further additions
 """
 
@@ -45,7 +49,7 @@ def join_all_players():
                 addr.append(c_addr)
                 break
         print(len(conn))
-        if len(conn) >= 4:
+        if len(conn) >= max_player:
             print("we are all in")
             all_players_in = True
 
@@ -67,12 +71,31 @@ def send_to_all(message):
     for x in range(len(conn)):
         conn[x].send(message)  
 
+def insert_card(dock, card):
+    removed_stock = 4
+    for cards in range(len(dock)):
+        if dock[cards] == "":
+            removed_stock = cards
+            break
+    improved_dock = dock
+    print(improved_dock)
+    improved_dock[removed_stock] = card
+    return improved_dock
+    
+
+def send_terminater_timer():
+    global stop_sending
+    time.sleep(0.1)
+    stop_sending = True
+
 def play():
-    global players, player_list, conn, addr, g_data
+    global players, player_list, conn, addr, g_data, stop_sending
     current_player = 0
     answered_player = 0
     did_player_answer = False
-    while True:
+    card_to_send = ""
+    while True: 
+        card_to_send = ""
         if not reciver_threads[current_player]:
             c_thread = threading.Thread(target=reciver, args=([current_player]),daemon=True)
             reciver_threads[current_player] = c_thread
@@ -88,19 +111,33 @@ def play():
                 for threads in range(len(reciver_threads)):
                     reciver_threads[threads] = None
                 if c_data[1] == current_player:
+                    print(players)
                     print("got some data from ", end="")
                     print(f"player {g_data[1]}")
-                    players[current_player].remove(c_data[0])
-                    conn[c_data[1]].send(pickle.dumps([22]))
+                    print(type(players[c_data[1]][c_data[0]]))
+                    card_to_send = players[c_data[1]][c_data[0]]
+                    players[c_data[1]][c_data[0]] = ""
+                    send_termination_counter = threading.Thread(target=send_terminater_timer, args=())
+                    send_termination_counter.start()
+                    while not stop_sending:
+                        conn[c_data[1]].send(pickle.dumps([22]))
+                    stop_sending = False
                     print(f"sent confirmation to player {c_data[1]}")
                     did_player_answer = True
+                    print("send the recived card to the next player")
+                    if c_data[1] == max_player - 1:
+                        conn[0].send(pickle.dumps([3,card_to_send]))
+                        players[0] = insert_card(players[0],card_to_send)
+                    else:
+                        conn[c_data[1]+1].send(pickle.dumps([3,card_to_send]))
+                        players[c_data[1]+1] = insert_card(players[c_data[1]+1],card_to_send)
                 elif c_data[1] != current_player:
                     #print(f"wrong player player {c_data[1]}")
                     conn[c_data[1]].send(pickle.dumps([21]))
                 else:
                     print("unknown")
         current_player += 1
-        if current_player == 4:
+        if current_player == max_player:
             current_player = 0
 
 def main():

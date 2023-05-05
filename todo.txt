@@ -5,12 +5,13 @@ add:
 	add battle UI**relies on network bringup**
 	add country selectio menu**relies on network bringup**
 fix/improve:
-	clean the sh****y code *ongoing*
-	recive cards when sent
+	clean the sh****y code*partially done*
 	settings:
 		speed of cards rotation(If sphere mode is activated)
 		fullscreened?
 		language(If supported by ursina)
+	improve the code in server responsible for sending message for 0.1 seconds
+	add debugging option for server as well
 
 beta
 add:
