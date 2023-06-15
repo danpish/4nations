@@ -3,6 +3,7 @@ import pickle
 import threading
 import time
 
+debugging = False
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP connection(again hopefully)
 server.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 server_address = ""  # automatic? maybe?
@@ -40,9 +41,14 @@ Net functions / data[0]
 
 def join_all_players():
     global players, player_list, conn, addr, all_players_in
+
     while not all_players_in:
+
         c_conn, c_addr = server.accept()
-        print("got connection from " + str(c_addr))
+
+        if debugging:
+            print("got connection from " + str(c_addr))
+
         for x in range(len(player_list)):
             if not player_list[x]:
                 player_list[x] = True
@@ -50,22 +56,32 @@ def join_all_players():
                 conn.append(c_conn)
                 addr.append(c_addr)
                 break
-        print(len(conn))
+
+        if debugging:
+            print(len(conn))
+
         if len(conn) >= max_player:
-            print("we are all in")
+            if debugging:
+                print("we are all in")
             all_players_in = True
 
 
 def receiver(receive_from):  # kind of pathetic. but you got to do what you got to do
     global g_data, conn
-    print(type(receive_from))
+
+    if debugging:
+        print(type(receive_from))
+
     conn[receive_from].settimeout(1.0)
+
     l_data = None
+
     while not l_data and not received_data:
         try:
             l_data = conn[receive_from].recv(1024)
         except socket.error as e:
             print(f"{e}")
+
     if l_data:
         g_data = pickle.loads(l_data)
 
@@ -77,14 +93,21 @@ def send_to_all(message):
 
 
 def insert_card(dock, card):
-    removed_stock = 4
-    for cards in range(len(dock)):
+
+    removed_stock = 4  # default to last slot
+
+    for cards in range(len(dock)):  # find the first empty slot
         if dock[cards] == "":
             removed_stock = cards
             break
+
     improved_dock = dock
-    print(improved_dock)
+
+    if debugging:
+        print(improved_dock)  # you know ... make sure we got the right thing
+
     improved_dock[removed_stock] = card
+
     return improved_dock
 
 
@@ -109,18 +132,21 @@ def play():
             receiver_threads[current_player].start()
 
         did_player_answer = False
-        print("now asking player " + f"{current_player}")
+
+        if debugging:
+            print("now asking player " + f"{current_player}")
+
         while not did_player_answer:
             send_to_all(pickle.dumps([2, current_player]))
             if g_data:
                 c_data = g_data
-                for threads in range(len(receiver_threads)):
-                    receiver_threads[threads] = None
+                receiver_threads[current_player] = None
                 if c_data[1] == current_player:
-                    print(players)
-                    print("got some data from ", end="")
-                    print(f"player {g_data[1]}")
-                    print(type(players[c_data[1]][c_data[0]]))
+                    if debugging:
+                        print(players)
+                        print("got some data from ", end="")
+                        print(f"player {g_data[1]}")
+                        print(type(players[c_data[1]][c_data[0]]))
                     card_to_send = players[c_data[1]][c_data[0]]
                     players[c_data[1]][c_data[0]] = ""
                     send_termination_counter = threading.Thread(target=send_terminator_timer, args=())
@@ -128,9 +154,15 @@ def play():
                     while not stop_sending:
                         conn[c_data[1]].send(pickle.dumps([22]))
                     stop_sending = False
-                    print(f"sent confirmation to player {c_data[1]}")
+
+                    if debugging:
+                        print(f"sent confirmation to player {c_data[1]}")
+
                     did_player_answer = True
-                    print("send the received card to the next player")
+
+                    if debugging:
+                        print("send the received card to the next player")
+                        
                     if c_data[1] == max_player - 1:
                         conn[0].send(pickle.dumps([3, card_to_send]))
                         players[0] = insert_card(players[0], card_to_send)
@@ -138,7 +170,6 @@ def play():
                         conn[c_data[1] + 1].send(pickle.dumps([3, card_to_send]))
                         players[c_data[1] + 1] = insert_card(players[c_data[1] + 1], card_to_send)
                 elif c_data[1] != current_player:
-                    # print(f"wrong player player {c_data[1]}")
                     conn[c_data[1]].send(pickle.dumps([21]))
                 else:
                     print("unknown")

@@ -1,17 +1,30 @@
+## halt
+== in process
+// not doable for now
+
 alpha
 add:
-	pause menu
-	add marker(anything that player can get to earn victory)
-	add battle UI**relies on network bringup**
-	add country selection menu**relies on network bringup**
+	##pause menu
+	##add marker(anything that player can get to earn victory. add selector maybe?)
+	##add battle UI
+	##add country selection menu
+
+
 fix/improve:
-	clean the sh****y code*partially done*
+
+    full network implementation:
+        ##support for pause menu
+        ==add waiting for other players
+        ##add victory condition
+        ##add support for marker and timer
+        ##add support for country selection
+
+	==clean the sh****y code
 	settings:
-		speed of cards rotation(If sphere mode is activated)
-		full-screened?
-		language(If supported by ursina)
-	improve the code in server responsible for sending message for 0.1 seconds
-	add debugging option for server as well
+		##speed of cards rotation(If sphere mode is activated)
+		##full-screened?
+		//language(If supported by ursina)
+	##improve the code in server responsible for sending message for 0.1 seconds
 
 beta
 add:
