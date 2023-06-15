@@ -8,12 +8,12 @@ import threading
 import time
 
 current_dock = [1, 2, 3, 0, 0]#Dock data currently in the client
-recived_dock = [1, 2, 3, 0, 0]#Dock data recived from the server
+received_dock = [1, 2, 3, 0, 0]#Dock data received from the server
 
 debugging_enabled = False
 is_mouse_down = False
 was_mouse_down = True
-send_card = False#Global card sending permision
+send_card = False#Global card sending permission
 connected_ID = 255
 testing = False
 g_data = None
@@ -42,7 +42,7 @@ textures = ["ir", "fr", "am", "ar"]#coutery BALL texture
 card_textures = ["iran_card", "france_card", "armenia_card", "argentina_card"]#countery CARDS texture
 
 
-class scoket_client:
+class Scoket_Client:
     def __init__(self, sock=None, addr="127.0.0.1", port=8008):
         if sock == None:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -63,9 +63,9 @@ class scoket_client:
         data = self.sock.recv(8126)
         return data
 
-client = scoket_client()
+client = Scoket_Client()
 
-class cards(Entity):
+class Cards(Entity):
     def __init__(self, position, ido, xpos, slot_position):
         global textures, card_mode, card_textures
         super().__init__(
@@ -125,6 +125,8 @@ class cards(Entity):
                     print(self.position.x == -0.5)
                     print(self.position.x == 0.5)
                     print(self.position.x == 1.6)
+
+
                 if current_dock[self.slot_position] != "":
                     do_delete = True
                 if not testing:
@@ -149,7 +151,7 @@ class cards(Entity):
                     if do_delete:
                         if debugging_enabled:
                             #for debugging showing if there is a card in a slot
-                            #not showing the entier information.
+                            #not showing the entire information.
                             dock_status = [False, False, False, False]
                             for cards_in_deck in range(4):
                                 if current_dock[cards_in_deck] != "":
@@ -165,16 +167,15 @@ def click_fixer():#hilarious fix I know
     is_mouse_down, was_mouse_down = False, True
 
 def on_begin():
-    global recived_dock
-    time.sleep(0.1)
+    global received_dock
     Main_menu_back.enabled = False
-    current_dock[0] = cards((-1.6, 0, 10), int(recived_dock[0]), 0, 0)
-    current_dock[1] = cards((-0.55, 0, 10), int(recived_dock[1]), 0, 1)
-    current_dock[2] = cards((0.55, 0, 10), int(recived_dock[2]), 0, 2)
-    current_dock[3] = cards((1.6, 0, 10), int(recived_dock[3]), 0, 3)
-    table = Entity(model="table", position=Vec3(0, -2.8, 10), texture="tabletop.png")
     fix_click_on_start = threading.Thread(target=click_fixer, args=())
     fix_click_on_start.start()
+    current_dock[0] = Cards((-1.6, 0, 10), int(received_dock[0]), 0, 0)
+    current_dock[1] = Cards((-0.55, 0, 10), int(received_dock[1]), 0, 1)
+    current_dock[2] = Cards((0.55, 0, 10), int(received_dock[2]), 0, 2)
+    current_dock[3] = Cards((1.6, 0, 10), int(received_dock[3]), 0, 3)
+    table = Entity(model="table", position=Vec3(0, -2.8, 10), texture="tabletop.png")
 
 def card_added(new_card_id):
     global current_dock
@@ -195,7 +196,7 @@ def card_added(new_card_id):
         position_placement_x = 2
     current_dock[empty_slot] = cards((position_placement_x, 0, 10), new_card_id, 0, empty_slot)
 
-def reset_menu_UI():
+def reset_menu_ui():
     Main_menu_test.enabled = False
     Main_menu_join.enabled = False
     Main_menu_text.enabled = False
@@ -217,7 +218,7 @@ def reset_menu_UI():
 
 
 def on_start():
-    reset_menu_UI()
+    reset_menu_ui()
     Main_menu_text.enabled = True
     Main_menu_test.enabled = True
     Main_menu_join.enabled = True
@@ -225,7 +226,7 @@ def on_start():
 
 
 def show_main_menu():
-    reset_menu_UI()
+    reset_menu_ui()
     Main_menu_start.enabled = True
     Main_menu_text.enabled = True
     Main_menu_settings.enabled = True
@@ -233,7 +234,7 @@ def show_main_menu():
 
 
 def open_settings_menu():
-    reset_menu_UI()
+    reset_menu_ui()
     Settings_menu_title.enabled = True
     Settings_menu_back.enabled = True
     Settings_menu_card_button.enabled = True
@@ -283,7 +284,7 @@ def single_player_test():
 
 
 def multiplayer_thread():
-    global send_card, recived_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled
+    global send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled
     testing = False
     while True:
         try:
@@ -297,10 +298,10 @@ def multiplayer_thread():
                 g_data = data
                 if data[0] == 1:
                     connected_ID = data[2]
-                    recived_dock = data[1]
+                    received_dock = data[1]
                 elif data[0] == 3:
                     if debugging_enabled:
-                        print(f"recived {data}")
+                        print(f"received {data}")
                     card_added(data[1])
                 if send_card:
                     #print(data[0])
@@ -365,10 +366,10 @@ Settings_menu_music.on_click = music_mode_change
 Settings_menu_card_button.on_click = card_mode_change
 your_turn_text = Text(text="your turn", position=(-0.5, 0.5, 0), color=color.green)
 your_turn_text.enabled = False
-# For god sake button text is glitched. So we define our own
-start_text = Text(parent=Main_menu_start, text="StARt", position=(-0.15, 0.1, 0), scale=5)
-settings_text = Text(parent=Main_menu_settings, text="SEttINGS", position=(-0.15, 0.1, 0), scale=5)
-exit_text = Text(parent=Main_menu_exit, text="EXIt", position=(-0.15, 0.1, 0), scale=5)
+# For god's sake button text is glitched. So we define our own
+start_text = Text(parent=Main_menu_start, text="Start", position=(-0.15, 0.1, 0), scale=5)
+settings_text = Text(parent=Main_menu_settings, text="Settings", position=(-0.15, 0.1, 0), scale=5)
+exit_text = Text(parent=Main_menu_exit, text="Exit", position=(-0.15, 0.1, 0), scale=5)
 
 Main_menu_exit.on_click = application.quit
 Main_menu_start.on_click = on_start
