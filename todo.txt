@@ -14,10 +14,11 @@ fix/improve:
 
     full network implementation:
         ##support for pause menu
-        ==add waiting for other players
+        ==fix the bug causing "your turn" to not go away for few seconds
         ##add victory condition
         ##add support for marker and timer
         ##add support for country selection
+        ##add address & port selection
 
 	==clean the sh****y code
 	settings:

@@ -35,12 +35,13 @@ Net functions / data[0]
 22 = DATA received
 21 = Not accepted Data receive
 3 = Send received card
+4 = all players has joined
 ... for further additions
 """
 
 
 def join_all_players():
-    global players, player_list, conn, addr, all_players_in
+    global players, player_list, conn, addr, all_players_in, max_player
 
     while not all_players_in:
 
@@ -64,6 +65,9 @@ def join_all_players():
             if debugging:
                 print("we are all in")
             all_players_in = True
+            time.sleep(0.2)
+            for persons in range(max_player):
+                send_to_seconds(pickle.dumps([4]), 0.1, int(persons))
 
 
 def receiver(receive_from):  # kind of pathetic. but you got to do what you got to do
@@ -93,7 +97,6 @@ def send_to_all(message):
 
 
 def insert_card(dock, card):
-
     removed_stock = 4  # default to last slot
 
     for cards in range(len(dock)):  # find the first empty slot
@@ -111,14 +114,24 @@ def insert_card(dock, card):
     return improved_dock
 
 
-def send_terminator_timer():
+def send_terminator_timer(seconds):
     global stop_sending
-    time.sleep(0.1)
+    time.sleep(seconds)
     stop_sending = True
 
 
+def send_to_seconds(message, seconds, person):
+    global stop_sending, conn
+    person = int(person)
+    send_termination_counter = threading.Thread(target=send_terminator_timer, args=(seconds,))
+    send_termination_counter.start()
+    while not stop_sending:
+        conn[person].send(message)
+    stop_sending = False
+
+
 def play():
-    global players, player_list, conn, addr, g_data, stop_sending
+    global players, player_list, conn, addr, g_data, stop_sending, max_player
     current_player = 0
     answered_player = 0
     did_player_answer = False
@@ -149,11 +162,8 @@ def play():
                         print(type(players[c_data[1]][c_data[0]]))
                     card_to_send = players[c_data[1]][c_data[0]]
                     players[c_data[1]][c_data[0]] = ""
-                    send_termination_counter = threading.Thread(target=send_terminator_timer, args=())
-                    send_termination_counter.start()
-                    while not stop_sending:
-                        conn[c_data[1]].send(pickle.dumps([22]))
-                    stop_sending = False
+
+                    send_to_seconds(pickle.dumps([22]), 0.1, c_data[1])
 
                     if debugging:
                         print(f"sent confirmation to player {c_data[1]}")
@@ -162,15 +172,18 @@ def play():
 
                     if debugging:
                         print("send the received card to the next player")
-                        
+
                     if c_data[1] == max_player - 1:
                         conn[0].send(pickle.dumps([3, card_to_send]))
+                        # send_to_seconds(pickle.dumps([3, card_to_send]), 0.1, card_to_send)
                         players[0] = insert_card(players[0], card_to_send)
                     else:
                         conn[c_data[1] + 1].send(pickle.dumps([3, card_to_send]))
+                        # send_to_seconds(pickle.dumps([3, card_to_send]), 0.1, c_data[1] + 1)
                         players[c_data[1] + 1] = insert_card(players[c_data[1] + 1], card_to_send)
                 elif c_data[1] != current_player:
-                    conn[c_data[1]].send(pickle.dumps([21]))
+                    # conn[c_data[1]].send(pickle.dumps([21]))
+                    send_to_seconds(pickle.dumps([21]), 0.1, c_data[1])
                 else:
                     print("unknown")
         current_player += 1

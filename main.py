@@ -20,14 +20,14 @@ g_data = None
 card_mode = "round"  # Options = round , card
 music_enabled = False
 do_delete_card = 0#Values = 0(invalid)/ 2(correct)/ 1(incorrect)
-
+did_recive_4 = False
 
 def card_movement_diagram(value):
     return (value - 1.6) ** 3 * (1 / 8) + 0.5
 
 
 def update():
-    global camera_position_z, g_data, send_card
+    global camera_position_z, g_data, send_card, did_recive_4
     camera_position_z = 0
     camera.position = (0, 0, camera_position_z)
     if g_data:
@@ -36,6 +36,11 @@ def update():
             send_card = g_data[1] == connected_ID
     else:
         send_card = False
+    if did_recive_4:
+        did_recive_4 = False
+        waiting_for_players.visible = False
+        for cards in range(4):
+            current_dock[cards].visible = True
 
 
 textures = ["ir", "fr", "am", "ar"]#coutery BALL texture
@@ -107,7 +112,7 @@ class Cards(Entity):
             card_movement_diagram(self.xpos) + (int(card_mode == "card") * 0.5),
             self.position.z,
         )
-        if self.hovered:
+        if self.hovered and self.visible:
             if mouse.left:
                 # I don't know if Ursina has it predefined but here it goes, self made click function
                 is_mouse_down = True
@@ -163,18 +168,23 @@ game = Ursina()
 
 def click_fixer():#hilarious fix I know
     global is_mouse_down, was_mouse_down
-    time.sleep(0.1)
+    time.sleep(0.2)
     is_mouse_down, was_mouse_down = False, True
 
-def on_begin():
+def on_begin(testing):
     global received_dock
     Main_menu_back.enabled = False
     fix_click_on_start = threading.Thread(target=click_fixer, args=())
     fix_click_on_start.start()
+
     current_dock[0] = Cards((-1.6, 0, 10), int(received_dock[0]), 0, 0)
     current_dock[1] = Cards((-0.55, 0, 10), int(received_dock[1]), 0, 1)
     current_dock[2] = Cards((0.55, 0, 10), int(received_dock[2]), 0, 2)
     current_dock[3] = Cards((1.6, 0, 10), int(received_dock[3]), 0, 3)
+    if not testing:
+        for cards in range(4):
+            current_dock[cards].visible = False
+        waiting_for_players.visible = True
     table = Entity(model="table", position=Vec3(0, -2.8, 10), texture="tabletop.png")
 
 def card_added(new_card_id):
@@ -267,13 +277,13 @@ def join_function():
     x = threading.Thread(target=multiplayer_thread, args=(), daemon=True)
     time.sleep(0.1)
     x.start()
-    on_begin()
+    on_begin(False)
 
 
 def test_function():
     x = threading.Thread(target=single_player_test, args=(), daemon=True)
     x.start()
-    on_begin()
+    on_begin(True)
 
 
 def single_player_test():
@@ -284,7 +294,7 @@ def single_player_test():
 
 
 def multiplayer_thread():
-    global send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled
+    global did_recive_4, send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled
     testing = False
     while True:
         try:
@@ -303,6 +313,8 @@ def multiplayer_thread():
                     if debugging_enabled:
                         print(f"received {data}")
                     card_added(data[1])
+                elif data[0] == 4:
+                    did_recive_4 = True
                 if send_card:
                     #print(data[0])
                     if data[0] == 22:
@@ -370,6 +382,9 @@ your_turn_text.enabled = False
 start_text = Text(parent=Main_menu_start, text="Start", position=(-0.15, 0.1, 0), scale=5)
 settings_text = Text(parent=Main_menu_settings, text="Settings", position=(-0.15, 0.1, 0), scale=5)
 exit_text = Text(parent=Main_menu_exit, text="Exit", position=(-0.15, 0.1, 0), scale=5)
+
+waiting_for_players = Text(text="waiting for players", position=Vec3(-0.2, 0, 10), scale=(2))
+waiting_for_players.visible = False
 
 Main_menu_exit.on_click = application.quit
 Main_menu_start.on_click = on_start
