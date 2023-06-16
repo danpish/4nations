@@ -17,12 +17,13 @@ receiver_threads = [None, None, None, None]
 received_data = False
 max_player = 2
 stop_sending = False
+old_time = time.time()
 """
     country codes
     IR = 0
-    AR = 1
-    FR = 2
-    AM = 3
+    FR = 1
+    AM = 2
+    AR = 3
 """
 players = [[0, 3, 1, 2, ""], [2, 1, 0, 3, ""], [3, 0, 2, 1, ""], [1, 3, 2, 0, ""]]
 player_list = [False, False, False, False]
@@ -36,6 +37,9 @@ Net functions / data[0]
 21 = Not accepted Data receive
 3 = Send received card
 4 = all players has joined
+5 = receive marker obtained
+6 = card obtained
+7 = marker countdown value
 ... for further additions
 """
 
@@ -93,6 +97,12 @@ def send_to_all(message):
         conn[x].send(message)
 
 
+def old_time_updater():
+    global old_time
+    while True:
+        old_time = time.time()
+
+
 def insert_card(dock, card):
     removed_stock = 4  # default to last slot
 
@@ -121,8 +131,25 @@ def send_to_seconds(message, seconds, person):
         conn[person].send(message)
 
 
+def marker_function():
+    global old_time
+    do_marker_countdown = 0
+    to_seconds = 0.3
+    multiplier = 25
+    while do_marker_countdown < to_seconds:
+        delta_time = time.time() - old_time
+        do_marker_countdown += delta_time * multiplier
+        print(do_marker_countdown * 10 /3 )
+        send_to_all(pickle.dumps([7, do_marker_countdown * 10 / 3]))
+    send_to_all(pickle.dumps([8]))
+    quit()
+
+
 def play():
     global players, player_list, conn, addr, g_data, stop_sending, max_player
+    start_delta_time = threading.Thread(target=old_time_updater, args=(), daemon=True)
+    start_delta_time.start()
+
     current_player = 0
     answered_player = 0
     did_player_answer = False
@@ -147,38 +174,38 @@ def play():
             if g_data:
                 c_data = g_data
                 if c_data[1] == current_player:
-                    if debugging:
-                        print(players)
-                        print("got some data from ", end="")
-                        print(f"player {g_data[1]}")
-                        print(type(players[c_data[1]][c_data[0]]))
-                    card_to_send = players[c_data[1]][c_data[0]]
-                    players[c_data[1]][c_data[0]] = ""
+                    if c_data[0] == 6:
+                        if debugging:
+                            print(players)
+                            print("got some data from ", end="")
+                            print(f"player {g_data[1]}")
+                            print(players[c_data[1]][c_data[2]])
+                        card_to_send = players[c_data[1]][c_data[2]]
+                        players[c_data[1]][c_data[2]] = ""
 
-                    send_to_seconds(pickle.dumps([22]), 0.01, c_data[1])
+                        send_to_seconds(pickle.dumps([22]), 0.01, c_data[1])
 
-                    if debugging:
-                        print(f"sent confirmation to player {c_data[1]}")
+                        if debugging:
+                            print(f"sent confirmation to player {c_data[1]}")
 
-                    did_player_answer = True
-                    receiver_threads[current_player] = None
+                        did_player_answer = True
+                        receiver_threads[current_player] = None
 
-                    if debugging:
-                        print("send the received card to the next player")
+                        if debugging:
+                            print("send the received card to the next player")
 
-                    if c_data[1] == max_player - 1:  # if the player is the last one
-                        conn[0].send(pickle.dumps([3, card_to_send]))  # send the card to first one instead
-                        # send_to_seconds(pickle.dumps([3, card_to_send]), 0.1, card_to_send)
-                        players[0] = insert_card(players[0], card_to_send)
-                    else:
-                        conn[c_data[1] + 1].send(pickle.dumps([3, card_to_send]))
-                        # send_to_seconds(pickle.dumps([3, card_to_send]), 0.1, c_data[1] + 1)
-                        players[c_data[1] + 1] = insert_card(players[c_data[1] + 1], card_to_send)
-
+                        if c_data[1] == max_player - 1:  # if the player is the last one
+                            conn[0].send(pickle.dumps([3, card_to_send]))  # send the card to first one instead
+                            players[0] = insert_card(players[0], card_to_send)
+                        else:
+                            conn[c_data[1] + 1].send(pickle.dumps([3, card_to_send]))
+                            players[c_data[1] + 1] = insert_card(players[c_data[1] + 1], card_to_send)
+                    elif c_data[0] == 5:
+                        if debugging:
+                            print("I GOT THE MARKER")
+                        marker_function()
                 elif c_data[1] != current_player:
-                    # conn[c_data[1]].send(pickle.dumps([21]))
                     send_to_seconds(pickle.dumps([21]), 0.1, c_data[1])
-
                 else:
                     print("unknown")
 

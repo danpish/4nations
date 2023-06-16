@@ -21,13 +21,16 @@ card_mode = "round"  # Options = round , card
 music_enabled = False
 do_delete_card = 0#Values = 0(invalid)/ 2(correct)/ 1(incorrect)
 did_recive_4 = False
-
+marker_counting_down = False
+count_down_value = 0
+timer_exist = None
+o_marker = None
 def card_movement_diagram(value):
     return (value - 1.6) ** 3 * (1 / 8) + 0.5
 
 
 def update():
-    global camera_position_z, g_data, send_card, did_recive_4
+    global camera_position_z, g_data, send_card, did_recive_4, timer_exist, o_marker
     camera_position_z = 0
     camera.position = (0, 0, camera_position_z)
     if g_data:
@@ -35,6 +38,8 @@ def update():
         if len(u_data) > 1:#be sure its not confirmation message and waiting for players
             if debugging_enabled:
                 print(u_data)
+            if u_data[0] == 7 and not timer_exist:
+                timer_exist = timer(o_marker)
             your_turn_text.enabled = u_data[1] == connected_ID
             send_card = u_data[1] == connected_ID
     else:
@@ -74,7 +79,7 @@ class Scoket_Client:
 client = Scoket_Client()
 
 class Cards(Entity):
-    def __init__(self, position, ido, xpos, slot_position):
+    def __init__(self, position, ido, slot_position):
         global textures, card_mode, card_textures, is_mouse_down, was_mouse_down
         super().__init__(
             parent=scene,
@@ -83,7 +88,7 @@ class Cards(Entity):
             collider="sphere",
             idi=ido,
             texture=textures[ido],
-            xpos=xpos,
+            xpos= 0,
             slot_position=slot_position,
             static_y_position=position[1]
         )
@@ -138,20 +143,11 @@ class Cards(Entity):
         if self.is_clicked() and self.visible:
             do_delete = False
 
-            if debugging_enabled:
-                #card position status(replace if you want)
-                print(self.position.x)
-                print(self.position.x == -1.6)
-                print(self.position.x == -0.5)
-                print(self.position.x == 0.5)
-                print(self.position.x == 1.6)
-
-
             if current_dock[self.slot_position] != "":
                 do_delete = True
             if not testing:
                 if do_delete and send_card:
-                    client.send_data([self.slot_position, connected_ID])
+                    client.send_data([6, connected_ID, self.slot_position])
                     if debugging_enabled:
                         print(f"i should send data and my ID is : {connected_ID}")
                     while do_delete_card == 0:
@@ -212,46 +208,52 @@ class marker(Entity):
             return False
 
     def update(self):
-        global is_mouse_down, was_mouse_down
+        global is_mouse_down, was_mouse_down , testing
         if self.is_clicked():
-           self.marker_clicked()
+            if testing:
+                self.marker_clicked()
+            else:
+                client.send_data([5, connected_ID])
 
 
 class timer(Entity):
     def __init__(self,marker):
         super().__init__(
             parent = marker,
-            position = (0, 0, -0.6),
+            position = (0, 0, -2),
             model="circle",
             color = color.dark_gray,
             scale = 3,
-            child_scale = 0,
-            child = None
         )
+        self.child_scale = 0
         self.child = Entity(parent = self, position = (0,0,-0.01), scale = self.child_scale, color = color.green, model = "circle")
 
     def update(self):
+        global count_down_value, marker_counting_down, testing
         if self.child_scale >= 1:
             self.disable()
         self.child.scale = self.child_scale
-        self.child_scale += 2 * time.dt
+        if testing:
+            self.child_scale += 2 * time.dt
+        else:
+            self.child_scale = count_down_value
 
 
 def on_begin(testing):
-    global received_dock, is_mouse_down, was_mouse_down
+    global received_dock, is_mouse_down, was_mouse_down, o_marker
     Main_menu_back.enabled = False
 
-    current_dock[0] = Cards((-1.6, 0, 10), int(received_dock[0]), 0, 0)
-    current_dock[1] = Cards((-0.55, 0, 10), int(received_dock[1]), 0, 1)
-    current_dock[2] = Cards((0.55, 0, 10), int(received_dock[2]), 0, 2)
-    current_dock[3] = Cards((1.6, 0, 10), int(received_dock[3]), 0, 3)
+    current_dock[0] = Cards((-2, 0, 10), int(received_dock[0]), 0)
+    current_dock[1] = Cards((-0.9, 0, 10), int(received_dock[1]), 1)
+    current_dock[2] = Cards((0.9, 0, 10), int(received_dock[2]), 2)
+    current_dock[3] = Cards((2, 0, 10), int(received_dock[3]), 3)
 
     if not testing:
         for cards in range(4):
             current_dock[cards].visible = False
         waiting_for_players.visible = True
 
-    o_marker = marker((0, 1.5, 10))
+    o_marker = marker((0, 0.2, 10))
     table = Entity(model="table", position=Vec3(0, -2.8, 10), texture="tabletop.png")
 
 def card_adder(new_card_id):
@@ -263,18 +265,18 @@ def card_adder(new_card_id):
         if current_dock[cards_in_deck] == "":
             empty_slot = cards_in_deck
     if empty_slot == 0:
-        position_placement_x = -1.6
+        position_placement_x = -2
     elif empty_slot == 1:
-        position_placement_x = -0.55
+        position_placement_x = -0.9
     elif empty_slot == 2:
-        position_placement_x = 0.55
+        position_placement_x = 0.9
     elif empty_slot == 3:
-        position_placement_x = 1.6
+        position_placement_x = 2
     else:
-        position_placement_x = 0
-        position_placement_y = 1.5
+        position_placement_x = 2.9
+        position_placement_y = 0
 
-    current_dock[empty_slot] = Cards((position_placement_x, position_placement_y, 10), new_card_id, 0, empty_slot)
+    current_dock[empty_slot] = Cards((position_placement_x, position_placement_y, 10), new_card_id, empty_slot)
 
 def reset_menu_ui():
     Main_menu_test.enabled = False
@@ -364,8 +366,9 @@ def single_player_test():
 
 
 def multiplayer_thread():
-    global did_recive_4, send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled
+    global did_recive_4, send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled, count_down_value, marker_counting_down
     testing = False
+    count_Down_obj = False
     while True:
         try:
             data = client.recive_data()
@@ -385,6 +388,11 @@ def multiplayer_thread():
                     card_adder(data[1])
                 elif data[0] == 4:
                     did_recive_4 = True
+                elif data[0] == 7:
+                    marker_counting_down = True
+                    count_down_value = data[1]
+                elif data[0] == 8:
+                    application.quit()
                 if send_card:
                     #print(data[0])
                     if data[0] == 22:
