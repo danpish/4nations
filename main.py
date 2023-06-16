@@ -10,7 +10,7 @@ import time
 current_dock = [1, 2, 3, 0, 0]#Dock data currently in the client
 received_dock = [1, 2, 3, 0, 0]#Dock data received from the server
 
-debugging_enabled = False
+debugging_enabled = True
 is_mouse_down = False
 was_mouse_down = True
 send_card = False#Global card sending permission
@@ -31,9 +31,12 @@ def update():
     camera_position_z = 0
     camera.position = (0, 0, camera_position_z)
     if g_data:
-        if len(g_data) > 1:#be sure its not confirmation message
-            your_turn_text.enabled = g_data[1] == connected_ID
-            send_card = g_data[1] == connected_ID
+        u_data = g_data
+        if len(u_data) > 1:#be sure its not confirmation message and waiting for players
+            if debugging_enabled:
+                print(u_data)
+            your_turn_text.enabled = u_data[1] == connected_ID
+            send_card = u_data[1] == connected_ID
     else:
         send_card = False
     if did_recive_4:
@@ -82,6 +85,7 @@ class Cards(Entity):
             texture=textures[ido],
             xpos=xpos,
             slot_position=slot_position,
+            static_y_position=position[1]
         )
         if card_mode == "card":
             self.model = "quad"
@@ -109,7 +113,7 @@ class Cards(Entity):
             self.xpos = 5.0
         self.position = (
             self.position.x,
-            card_movement_diagram(self.xpos) + (int(card_mode == "card") * 0.5),
+            self.static_y_position + card_movement_diagram(self.xpos) + (int(card_mode == "card") * 0.5),
             self.position.z,
         )
         if self.hovered and self.visible:
@@ -181,17 +185,20 @@ def on_begin(testing):
     current_dock[1] = Cards((-0.55, 0, 10), int(received_dock[1]), 0, 1)
     current_dock[2] = Cards((0.55, 0, 10), int(received_dock[2]), 0, 2)
     current_dock[3] = Cards((1.6, 0, 10), int(received_dock[3]), 0, 3)
+
     if not testing:
         for cards in range(4):
             current_dock[cards].visible = False
         waiting_for_players.visible = True
+
     table = Entity(model="table", position=Vec3(0, -2.8, 10), texture="tabletop.png")
 
-def card_added(new_card_id):
+def card_adder(new_card_id):
     global current_dock
-    empty_slot = 4
-    position_placement_x = 0 
-    for cards_in_deck in range(len(current_dock) - 1):
+    empty_slot = 4  # default empty slot as 5th card
+    position_placement_x = 0
+    position_placement_y = 0
+    for cards_in_deck in range(len(current_dock) - 1): # search in 4 main cards
         if current_dock[cards_in_deck] == "":
             empty_slot = cards_in_deck
     if empty_slot == 0:
@@ -203,8 +210,10 @@ def card_added(new_card_id):
     elif empty_slot == 3:
         position_placement_x = 1.6
     else:
-        position_placement_x = 2
-    current_dock[empty_slot] = cards((position_placement_x, 0, 10), new_card_id, 0, empty_slot)
+        position_placement_x = 0
+        position_placement_y = 1.5
+
+    current_dock[empty_slot] = Cards((position_placement_x, position_placement_y, 10), new_card_id, 0, empty_slot)
 
 def reset_menu_ui():
     Main_menu_test.enabled = False
@@ -312,7 +321,7 @@ def multiplayer_thread():
                 elif data[0] == 3:
                     if debugging_enabled:
                         print(f"received {data}")
-                    card_added(data[1])
+                    card_adder(data[1])
                 elif data[0] == 4:
                     did_recive_4 = True
                 if send_card:

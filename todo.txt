@@ -5,7 +5,7 @@
 alpha
 add:
 	##pause menu
-	##add marker(anything that player can get to earn victory. add selector maybe?)
+	==add marker(anything that player can get to earn victory. add selector maybe?)
 	##add battle UI
 	##add country selection menu
 
@@ -14,15 +14,13 @@ fix/improve:
 
     full network implementation:
         ##support for pause menu
-        ==fix the bug causing "your turn" to not go away for few seconds
-        ##add victory condition
+	##add victory condition
         ##add support for marker and timer
         ##add support for country selection
         ##add address & port selection
 
-	==clean the sh****y code
 	settings:
-		##speed of cards rotation(If sphere mode is activated)
+		==speed of cards rotation(If sphere mode is activated)
 		##full-screened?
 		//language(If supported by ursina)
 	##improve the code in server responsible for sending message for 0.1 seconds

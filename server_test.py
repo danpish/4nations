@@ -3,7 +3,7 @@ import pickle
 import threading
 import time
 
-debugging = False
+debugging = True
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP connection(again hopefully)
 server.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 server_address = ""  # automatic? maybe?
@@ -66,8 +66,7 @@ def join_all_players():
                 print("we are all in")
             all_players_in = True
             time.sleep(0.2)
-            for persons in range(max_player):
-                send_to_seconds(pickle.dumps([4]), 0.1, int(persons))
+            send_to_all(pickle.dumps([4]))
 
 
 def receiver(receive_from):  # kind of pathetic. but you got to do what you got to do
@@ -75,8 +74,6 @@ def receiver(receive_from):  # kind of pathetic. but you got to do what you got 
 
     if debugging:
         print(type(receive_from))
-
-    conn[receive_from].settimeout(1.0)
 
     l_data = None
 
@@ -114,20 +111,14 @@ def insert_card(dock, card):
     return improved_dock
 
 
-def send_terminator_timer(seconds):
-    global stop_sending
-    time.sleep(seconds)
-    stop_sending = True
-
-
 def send_to_seconds(message, seconds, person):
-    global stop_sending, conn
+    global conn
     person = int(person)
-    send_termination_counter = threading.Thread(target=send_terminator_timer, args=(seconds,))
-    send_termination_counter.start()
-    while not stop_sending:
+    passed_milli_sec = 0
+    while passed_milli_sec < seconds:
+        time.sleep(0.01)
+        passed_milli_sec += 0.01
         conn[person].send(message)
-    stop_sending = False
 
 
 def play():
@@ -136,8 +127,10 @@ def play():
     answered_player = 0
     did_player_answer = False
     card_to_send = ""
+
     while True:
         card_to_send = ""
+
         if not receiver_threads[current_player]:
             c_thread = threading.Thread(target=receiver, args=([current_player]), daemon=True)
             receiver_threads[current_player] = c_thread
@@ -153,7 +146,6 @@ def play():
             send_to_all(pickle.dumps([2, current_player]))
             if g_data:
                 c_data = g_data
-                receiver_threads[current_player] = None
                 if c_data[1] == current_player:
                     if debugging:
                         print(players)
@@ -163,29 +155,33 @@ def play():
                     card_to_send = players[c_data[1]][c_data[0]]
                     players[c_data[1]][c_data[0]] = ""
 
-                    send_to_seconds(pickle.dumps([22]), 0.1, c_data[1])
+                    send_to_seconds(pickle.dumps([22]), 0.01, c_data[1])
 
                     if debugging:
                         print(f"sent confirmation to player {c_data[1]}")
 
                     did_player_answer = True
+                    receiver_threads[current_player] = None
 
                     if debugging:
                         print("send the received card to the next player")
 
-                    if c_data[1] == max_player - 1:
-                        conn[0].send(pickle.dumps([3, card_to_send]))
+                    if c_data[1] == max_player - 1:  # if the player is the last one
+                        conn[0].send(pickle.dumps([3, card_to_send]))  # send the card to first one instead
                         # send_to_seconds(pickle.dumps([3, card_to_send]), 0.1, card_to_send)
                         players[0] = insert_card(players[0], card_to_send)
                     else:
                         conn[c_data[1] + 1].send(pickle.dumps([3, card_to_send]))
                         # send_to_seconds(pickle.dumps([3, card_to_send]), 0.1, c_data[1] + 1)
                         players[c_data[1] + 1] = insert_card(players[c_data[1] + 1], card_to_send)
+
                 elif c_data[1] != current_player:
                     # conn[c_data[1]].send(pickle.dumps([21]))
                     send_to_seconds(pickle.dumps([21]), 0.1, c_data[1])
+
                 else:
                     print("unknown")
+
         current_player += 1
         if current_player == max_player:
             current_player = 0
