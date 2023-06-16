@@ -192,6 +192,7 @@ def on_begin(testing):
         waiting_for_players.visible = True
 
     table = Entity(model="table", position=Vec3(0, -2.8, 10), texture="tabletop.png")
+    marker = Entity(model="marker", position=Vec3(0,1,10), scale=.2)
 
 def card_adder(new_card_id):
     global current_dock

@@ -4,29 +4,31 @@
 
 alpha
 add:
-	##pause menu
-	==add marker(anything that player can get to earn victory. add selector maybe?)
-	##add battle UI
-	##add country selection menu
+    ##pause menu
+    ==add marker(anything that player can get to earn victory. add selector maybe?)
+    ##add battle UI
+    ##add country selection menu
 
 
 fix/improve:
-
+	
     full network implementation:
         ##support for pause menu
-	##add victory condition
+        ##add victory condition
         ##add support for marker and timer
         ##add support for country selection
         ##add address & port selection
 
-	settings:
-		==speed of cards rotation(If sphere mode is activated)
-		##full-screened?
-		//language(If supported by ursina)
-	##improve the code in server responsible for sending message for 0.1 seconds
+    settings:
+        ==speed of cards rotation(If sphere mode is activated)
+        ##full-screened?
+        //language(If supported by ursina)
+
+    ##improve the code in server responsible for sending message for 0.1 seconds
+    ##fix marker texture issues
 
 beta
 add:
-	finish alpha first
-	improve look and feel
-	add optimization settings
+    finish alpha first
+    improve look and feel
+    add optimization settings
