@@ -5,7 +5,6 @@
 alpha
 add:
     ##pause menu
-    ==add marker(anything that player can get to earn victory. add selector maybe?)
     ##add battle UI
     ##add country selection menu
 
@@ -26,6 +25,7 @@ fix/improve:
 
     ##improve the code in server responsible for sending message for 0.1 seconds
     ##fix marker texture issues
+    ##add selector for marker if possible
 
 beta
 add:
