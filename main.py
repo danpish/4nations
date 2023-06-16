@@ -10,7 +10,7 @@ import time
 current_dock = [1, 2, 3, 0, 0]#Dock data currently in the client
 received_dock = [1, 2, 3, 0, 0]#Dock data received from the server
 
-debugging_enabled = True
+debugging_enabled = False
 is_mouse_down = False
 was_mouse_down = True
 send_card = False#Global card sending permission
@@ -75,7 +75,7 @@ client = Scoket_Client()
 
 class Cards(Entity):
     def __init__(self, position, ido, xpos, slot_position):
-        global textures, card_mode, card_textures
+        global textures, card_mode, card_textures, is_mouse_down, was_mouse_down
         super().__init__(
             parent=scene,
             position=position,
@@ -92,6 +92,25 @@ class Cards(Entity):
             self.collider = "cube"
             self.texture = card_textures[self.idi]
             self.scale = (1,2,1)
+        is_mouse_down, was_mouse_down = False, True
+
+
+
+    def is_clicked(self):
+        global is_mouse_down, was_mouse_down
+
+        if not self.hovered:
+            return False
+        if not is_mouse_down and not was_mouse_down:
+            was_mouse_down = True
+            return True
+        if mouse.left:
+            is_mouse_down = True
+            was_mouse_down = False
+            return False
+        else:
+            is_mouse_down = False
+            return False
 
     def update(self):
         global is_mouse_down, was_mouse_down, send_card, card_mode, g_data, do_delete_card, connected_ID, debugging_enabled
@@ -116,70 +135,111 @@ class Cards(Entity):
             self.static_y_position + card_movement_diagram(self.xpos) + (int(card_mode == "card") * 0.5),
             self.position.z,
         )
-        if self.hovered and self.visible:
-            if mouse.left:
-                # I don't know if Ursina has it predefined but here it goes, self made click function
-                is_mouse_down = True
-                was_mouse_down = False
+        if self.is_clicked() and self.visible:
+            do_delete = False
+
+            if debugging_enabled:
+                #card position status(replace if you want)
+                print(self.position.x)
+                print(self.position.x == -1.6)
+                print(self.position.x == -0.5)
+                print(self.position.x == 0.5)
+                print(self.position.x == 1.6)
+
+
+            if current_dock[self.slot_position] != "":
+                do_delete = True
+            if not testing:
+                if do_delete and send_card:
+                    client.send_data([self.slot_position, connected_ID])
+                    if debugging_enabled:
+                        print(f"i should send data and my ID is : {connected_ID}")
+                    while do_delete_card == 0:
+                        if debugging_enabled:
+                            time.sleep(0.05)
+                            print(f"client side do_send_card = {do_delete_card}")
+                    if do_delete_card:
+                        if do_delete_card == 1:
+                            send_card = False
+                            print("done")
+                            current_dock[self.slot_position] = ""
+                            self.disable()
+                        elif do_delete_card == 2:
+                            print("not your turn")
+                            send_card = False
             else:
-                is_mouse_down = False
-            if not is_mouse_down and not was_mouse_down:
-                was_mouse_down = True
-                do_delete = False
-                
-                if debugging_enabled:
-                    #card position status(replace if you want)
-                    print(self.position.x)
-                    print(self.position.x == -1.6)
-                    print(self.position.x == -0.5)
-                    print(self.position.x == 0.5)
-                    print(self.position.x == 1.6)
-
-
-                if current_dock[self.slot_position] != "":
-                    do_delete = True
-                if not testing:
-                    if do_delete and send_card:
-                        client.send_data([self.slot_position, connected_ID])
-                        if debugging_enabled:
-                            print(f"i should send data and my ID is : {connected_ID}")
-                        while do_delete_card == 0:
-                            if debugging_enabled:
-                                time.sleep(0.05)
-                                print(f"client side do_send_card = {do_delete_card}")
-                        if do_delete_card:
-                            if do_delete_card == 1:
-                                send_card = False
-                                print("done")
-                                current_dock[self.slot_position] = ""
-                                self.disable()
-                            elif do_delete_card == 2:
-                                print("not your turn")
-                                send_card = False
-                else:
-                    if do_delete:
-                        if debugging_enabled:
-                            #for debugging showing if there is a card in a slot
-                            #not showing the entire information.
-                            dock_status = [False, False, False, False]
-                            for cards_in_deck in range(4):
-                                if current_dock[cards_in_deck] != "":
-                                    dock_status[cards_in_deck] = True
-                            print(dock_status)
-                        self.disable()
+                if do_delete:
+                    if debugging_enabled:
+                        #for debugging showing if there is a card in a slot
+                        #not showing the entire information.
+                        dock_status = [False, False, False, False]
+                        for cards_in_deck in range(4):
+                            if current_dock[cards_in_deck] != "":
+                                dock_status[cards_in_deck] = True
+                        print(dock_status)
+                    self.disable()
 
 game = Ursina()
 
-def click_fixer():#hilarious fix I know
-    global is_mouse_down, was_mouse_down
-    time.sleep(0.2)
-    is_mouse_down, was_mouse_down = False, True
+class marker(Entity):
+    def __init__(self, position):
+        global is_mouse_down, was_mouse_down
+        super().__init__(
+            position = position,
+            model="marker",
+            collider="marker",
+            scale=.2
+        )
+        is_mouse_down, was_mouse_down = False, True
+
+    def marker_clicked(self):
+        n_timer = timer(self)
+
+    def is_clicked(self):
+        global is_mouse_down, was_mouse_down
+
+        if not self.hovered:
+            return False
+        if not is_mouse_down and not was_mouse_down:
+            was_mouse_down = True
+            return True
+        if mouse.left:
+            is_mouse_down = True
+            was_mouse_down = False
+            return False
+        else:
+            is_mouse_down = False
+            return False
+
+    def update(self):
+        global is_mouse_down, was_mouse_down
+        if self.is_clicked():
+           self.marker_clicked()
+
+
+class timer(Entity):
+    def __init__(self,marker):
+        super().__init__(
+            parent = marker,
+            position = (0, 0, -0.6),
+            model="circle",
+            color = color.dark_gray,
+            scale = 3,
+            child_scale = 0,
+            child = None
+        )
+        self.child = Entity(parent = self, position = (0,0,-0.01), scale = self.child_scale, color = color.green, model = "circle")
+
+    def update(self):
+        if self.child_scale >= 1:
+            self.disable()
+        self.child.scale = self.child_scale
+        self.child_scale += 2 * time.dt
+
 
 def on_begin(testing):
-    global received_dock
+    global received_dock, is_mouse_down, was_mouse_down
     Main_menu_back.enabled = False
-    fix_click_on_start = threading.Thread(target=click_fixer, args=())
-    fix_click_on_start.start()
 
     current_dock[0] = Cards((-1.6, 0, 10), int(received_dock[0]), 0, 0)
     current_dock[1] = Cards((-0.55, 0, 10), int(received_dock[1]), 0, 1)
@@ -191,8 +251,8 @@ def on_begin(testing):
             current_dock[cards].visible = False
         waiting_for_players.visible = True
 
+    o_marker = marker((0, 1.5, 10))
     table = Entity(model="table", position=Vec3(0, -2.8, 10), texture="tabletop.png")
-    marker = Entity(model="marker", position=Vec3(0,1,10), scale=.2)
 
 def card_adder(new_card_id):
     global current_dock
