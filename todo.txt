@@ -16,14 +16,13 @@ fix/improve:
         ##add support for country selection
 
     settings:
-        ==speed of cards rotation(If sphere mode is activated)
         ##full-screened?
         //language(If supported by ursina)
 
     ##improve the code in server responsible for sending message for 0.1 seconds
     ##fix marker texture issues
     ##add selector for marker if possible
-    ##code needs cleaning up
+    ==code needs cleaning up
 
 beta
 add:

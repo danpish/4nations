@@ -25,6 +25,7 @@ marker_counting_down = False
 count_down_value = 0
 timer_exist = None
 o_marker = None
+card_rotation_speed = 4
 def card_movement_diagram(value):
     return (value - 1.6) ** 3 * (1 / 8) + 0.5
 
@@ -118,13 +119,13 @@ class Cards(Entity):
             return False
 
     def update(self):
-        global is_mouse_down, was_mouse_down, send_card, card_mode, g_data, do_delete_card, connected_ID, debugging_enabled
+        global is_mouse_down, was_mouse_down, send_card, card_mode, g_data, do_delete_card, connected_ID, debugging_enabled, card_rotation_speed
 
         if held_keys["r"]:
             self.xpos = 0
-        movement_speed = 4 * time.dt
+        movement_speed =  4 * time.dt
         if card_mode == "round":
-            self.rotation = Vec3(0, self.rotation.y + (movement_speed * 16), 0)
+            self.rotation = Vec3(0, self.rotation.y + (movement_speed * 16) * card_rotation_speed, 0)
         if self.hovered:
             if self.xpos < 1.0:
                 self.xpos += movement_speed
@@ -242,7 +243,7 @@ class timer(Entity):
 def on_begin(testing):
     global received_dock, is_mouse_down, was_mouse_down, o_marker
     Main_menu_back.enabled = False
-    input_port.enabled , input_address.enabled = False, False
+    Joingame_input_port.enabled , Joingame_input_address.enabled = False, False
 
     current_dock[0] = Cards((-2, 0, 10), int(received_dock[0]), 0)
     current_dock[1] = Cards((-0.9, 0, 10), int(received_dock[1]), 1)
@@ -298,11 +299,12 @@ def reset_menu_ui():
     Settings_menu_super.enabled = False
     Settings_menu_super_title.enabled = False
     Settings_menu_super_stat.enabled = False
+    Settings_menu_card_rotation_speed.enabled = False
 
-    input_port.enabled = False
-    input_address.enabled = False
-    join_address_port.enabled = False
-    back_address_port.enabled = False
+    Joingame_input_port.enabled = False
+    Joingame_input_address.enabled = False
+    Joingame_join_address_port.enabled = False
+    Joingame_back_address_port.enabled = False
 
 
 
@@ -321,7 +323,6 @@ def show_main_menu():
     Main_menu_settings.enabled = True
     Main_menu_exit.enabled = True
 
-
 def open_settings_menu():
     reset_menu_ui()
     Settings_menu_title.enabled = True
@@ -334,13 +335,18 @@ def open_settings_menu():
     Settings_menu_super.enabled = True
     Settings_menu_super_title.enabled = True
     Settings_menu_super_stat.enabled = True
+    Settings_menu_card_rotation_speed.enabled = True
+
+def change_ball_country_rotate():
+    global card_rotation_speed
+    card_rotation_speed = Settings_menu_card_rotation_speed.value
 
 def open_join_menu():
     reset_menu_ui()
-    input_address.enabled = True
-    input_port.enabled = True
-    join_address_port.enabled = True
-    back_address_port.enabled = True
+    Joingame_input_address.enabled = True
+    Joingame_input_port.enabled = True
+    Joingame_join_address_port.enabled = True
+    Joingame_back_address_port.enabled = True
 
 
 def card_mode_change():
@@ -456,6 +462,8 @@ Settings_menu_music_title = Text(parent=Main_menu_back, position=(-0.3, -0.1, -0
 Settings_menu_super = Button(parent=Main_menu_back, scale=0.2, position=(0.3, -0.3, -0.1))
 Settings_menu_super_title = Text(parent=Main_menu_back, position=(-0.3, -0.3, -0.1), text="Super mode")
 Settings_menu_super_stat = Text(parent=Settings_menu_super, scale=5, position=(-0.3, 0, -0.1), text="Never")
+Settings_menu_card_rotation_speed = Slider(min = 0, max = 100, default=card_rotation_speed, height = 0.025,x = -0.25, y = 0.14)
+Settings_menu_card_rotation_speed.enabled = False
 Settings_menu_title.enabled = False
 Settings_menu_back.enabled = False
 Settings_menu_card_button.enabled = False
@@ -468,6 +476,7 @@ Settings_menu_super_title.enabled = False
 Settings_menu_super_stat.enabled = False
 Settings_menu_music.on_click = music_mode_change
 Settings_menu_card_button.on_click = card_mode_change
+
 your_turn_text = Text(text="your turn", position=(-0.5, 0.5, 0), color=color.green)
 your_turn_text.enabled = False
 # For god's sake button text is glitched. So we define our own
@@ -475,16 +484,16 @@ start_text = Text(parent=Main_menu_start, text="Start", position=(-0.15, 0.1, 0)
 settings_text = Text(parent=Main_menu_settings, text="Settings", position=(-0.15, 0.1, 0), scale=5)
 exit_text = Text(parent=Main_menu_exit, text="Exit", position=(-0.15, 0.1, 0), scale=5)
 #address bar and port function
-input_address = InputField(label = "address", max_lines=1, character_limit=15, y=.1)
-input_port = InputField(label="port", max_lines=1, character_limit=6, y=.0)
-join_address_port = Button(parent = Main_menu_back,scale=(0.2,0.1), position=(-0.1, -0.3, -0.1))
-back_address_port = Button(parent = Main_menu_back,scale=(0.2,0.1), position=(0.1, -0.3, -0.1))
-join_button_label = Text(parent=join_address_port, text="Join", scale=(5, 20), position=(-0.2, 0.2, 0))
-join_regret_label = Text(parent=back_address_port, text="Back", scale=(5, 20), position=(-0.2, 0.2, 0))
-input_address.enabled = False
-input_port.enabled = False
-join_address_port.enabled = False
-back_address_port.enabled = False
+Joingame_input_address = InputField(label = "address", max_lines=1, character_limit=15, y=.1)
+Joingame_input_port = InputField(label="port", max_lines=1, character_limit=6, y=.0)
+Joingame_join_address_port = Button(parent = Main_menu_back,scale=(0.2,0.1), position=(-0.1, -0.3, -0.1))
+Joingame_back_address_port = Button(parent = Main_menu_back,scale=(0.2,0.1), position=(0.1, -0.3, -0.1))
+Joingame_join_button_label = Text(parent=Joingame_join_address_port, text="Join", scale=(5, 20), position=(-0.2, 0.2, 0))
+Joingame_join_regret_label = Text(parent=Joingame_back_address_port, text="Back", scale=(5, 20), position=(-0.2, 0.2, 0))
+Joingame_input_address.enabled = False
+Joingame_input_port.enabled = False
+Joingame_join_address_port.enabled = False
+Joingame_back_address_port.enabled = False
 
 
 
@@ -501,8 +510,10 @@ Main_menu_test.on_click = test_function
 Main_menu_go_back.on_click = show_main_menu
 Main_menu_settings.on_click = open_settings_menu
 Settings_menu_back.on_click = show_main_menu
-back_address_port.on_click = on_start
-join_address_port.on_click = join_function
+Joingame_back_address_port.on_click = on_start
+Joingame_join_address_port.on_click = join_function
+
+Settings_menu_card_rotation_speed.on_value_changed = change_ball_country_rotate
 
 
 Sky()
