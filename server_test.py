@@ -126,6 +126,7 @@ def send_to_seconds(message, seconds, person):
 
 
 def marker_function():
+    global max_player
     do_marker_countdown = 0
     to_seconds = 0.3
     multiplier = 4
@@ -137,7 +138,8 @@ def marker_function():
         print(new_time)
         send_to_all(pickle.dumps([7, new_time]))
         delta_time = time.time() - t0
-    send_to_all(pickle.dumps([8]))
+    for all_p in range(max_player):
+        send_to_seconds(pickle.dumps([8]), 0.1, all_p)
     quit()
 
 
@@ -189,10 +191,12 @@ def play():
                             print("send the received card to the next player")
 
                         if c_data[1] == max_player - 1:  # if the player is the last one
-                            conn[0].send(pickle.dumps([3, card_to_send]))  # send the card to first one instead
+                            # conn[0].send(pickle.dumps([3, card_to_send]))  # send the card to first one instead
+                            send_to_seconds(pickle.dumps([3, card_to_send]), 0.1, 0)
                             players[0] = insert_card(players[0], card_to_send)
                         else:
-                            conn[c_data[1] + 1].send(pickle.dumps([3, card_to_send]))
+                            # conn[c_data[1] + 1].send(pickle.dumps([3, card_to_send]))
+                            send_to_seconds(pickle.dumps([3, card_to_send]), 0.1, c_data[1] + 1)
                             players[c_data[1] + 1] = insert_card(players[c_data[1] + 1], card_to_send)
                     elif c_data[0] == 5:
                         marker_received = True
