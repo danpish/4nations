@@ -65,8 +65,8 @@ class Scoket_Client:
         self.addr = "127.0.0.1"
         self.port = 8008
 
-    def connect(self):
-        self.sock.connect((self.addr, self.port))
+    def connect(self,address, port):
+        self.sock.connect((address, port))
 
     def send_data(self, data):
         to_send_data = pickle.dumps(data)
@@ -242,6 +242,7 @@ class timer(Entity):
 def on_begin(testing):
     global received_dock, is_mouse_down, was_mouse_down, o_marker
     Main_menu_back.enabled = False
+    input_port.enabled , input_address.enabled = False, False
 
     current_dock[0] = Cards((-2, 0, 10), int(received_dock[0]), 0)
     current_dock[1] = Cards((-0.9, 0, 10), int(received_dock[1]), 1)
@@ -298,6 +299,12 @@ def reset_menu_ui():
     Settings_menu_super_title.enabled = False
     Settings_menu_super_stat.enabled = False
 
+    input_port.enabled = False
+    input_address.enabled = False
+    join_address_port.enabled = False
+    back_address_port.enabled = False
+
+
 
 def on_start():
     reset_menu_ui()
@@ -328,6 +335,14 @@ def open_settings_menu():
     Settings_menu_super_title.enabled = True
     Settings_menu_super_stat.enabled = True
 
+def open_join_menu():
+    reset_menu_ui()
+    input_address.enabled = True
+    input_port.enabled = True
+    join_address_port.enabled = True
+    back_address_port.enabled = True
+
+
 def card_mode_change():
     global card_mode
     if card_mode == "round":
@@ -343,14 +358,14 @@ def music_mode_change():
     if music_enabled:
         Settings_menu_music.color = color.green
 
-
 def join_function():
-    client.connect()
+    address = input_address.text
+    port = input_port.text
+    client.connect(address, int(port))
     x = threading.Thread(target=multiplayer_thread, args=(), daemon=True)
     time.sleep(0.1)
     x.start()
     on_begin(False)
-
 
 def test_function():
     x = threading.Thread(target=single_player_test, args=(), daemon=True)
@@ -432,8 +447,7 @@ Main_menu_go_back.enabled = False
 #settings buttons and functions
 Settings_menu_title = Text(parent=Main_menu_back, text="Settings", position=(0, 0.4, -0.1))
 Settings_menu_back = Button(parent=Main_menu_back, scale=(0.2, 0.05), position=(0, -0.3, -0.1))
-Settings_menu_back_title = Text(
-parent=Settings_menu_back, text="BACK", scale=(5, 20), position=(-0.2, 0.2, 0))
+Settings_menu_back_title = Text(parent=Settings_menu_back, text="BACK", scale=(5, 20), position=(-0.2, 0.2, 0))
 Settings_menu_card_button = Button(parent=Main_menu_back, scale=0.2, position=(0.3, 0.1, -0.1))
 Settings_menu_card_title = Text(parent=Main_menu_back, position=(-0.3, 0.1, -0.1), text="Card mode")
 Settings_menu_card_stat = Text(parent=Settings_menu_card_button, scale=5, position=(-0.3, 0, -0.1), text=card_mode)
@@ -460,17 +474,35 @@ your_turn_text.enabled = False
 start_text = Text(parent=Main_menu_start, text="Start", position=(-0.15, 0.1, 0), scale=5)
 settings_text = Text(parent=Main_menu_settings, text="Settings", position=(-0.15, 0.1, 0), scale=5)
 exit_text = Text(parent=Main_menu_exit, text="Exit", position=(-0.15, 0.1, 0), scale=5)
+#address bar and port function
+input_address = InputField(label = "address", max_lines=1, character_limit=15, y=.1)
+input_port = InputField(label="port", max_lines=1, character_limit=6, y=.0)
+join_address_port = Button(parent = Main_menu_back,scale=(0.2,0.1), position=(-0.1, -0.3, -0.1))
+back_address_port = Button(parent = Main_menu_back,scale=(0.2,0.1), position=(0.1, -0.3, -0.1))
+join_button_label = Text(parent=join_address_port, text="Join", scale=(5, 20), position=(-0.2, 0.2, 0))
+join_regret_label = Text(parent=back_address_port, text="Back", scale=(5, 20), position=(-0.2, 0.2, 0))
+input_address.enabled = False
+input_port.enabled = False
+join_address_port.enabled = False
+back_address_port.enabled = False
+
+
 
 waiting_for_players = Text(text="waiting for players", position=Vec3(-0.2, 0, 10), scale=(2))
 waiting_for_players.visible = False
 
+
+
+
 Main_menu_exit.on_click = application.quit
 Main_menu_start.on_click = on_start
-Main_menu_join.on_click = join_function
+Main_menu_join.on_click = open_join_menu
 Main_menu_test.on_click = test_function
 Main_menu_go_back.on_click = show_main_menu
 Main_menu_settings.on_click = open_settings_menu
 Settings_menu_back.on_click = show_main_menu
+back_address_port.on_click = on_start
+join_address_port.on_click = join_function
 
 
 Sky()
