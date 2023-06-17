@@ -3,7 +3,7 @@ import pickle
 import threading
 import time
 
-debugging = True
+debugging = False
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP connection(again hopefully)
 server.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 server_address = ""  # automatic? maybe?
@@ -17,7 +17,7 @@ receiver_threads = [None, None, None, None]
 received_data = False
 max_player = 2
 stop_sending = False
-old_time = time.time()
+marker_received = False
 """
     country codes
     IR = 0
@@ -74,14 +74,14 @@ def join_all_players():
 
 
 def receiver(receive_from):  # kind of pathetic. but you got to do what you got to do
-    global g_data, conn
+    global g_data, conn, marker_received
 
     if debugging:
         print(type(receive_from))
 
     l_data = None
 
-    while not l_data and not received_data:
+    while not l_data and not received_data and not marker_received:
         try:
             l_data = conn[receive_from].recv(1024)
         except socket.error as e:
@@ -95,12 +95,6 @@ def send_to_all(message):
     global conn
     for x in range(len(conn)):
         conn[x].send(message)
-
-
-def old_time_updater():
-    global old_time
-    while True:
-        old_time = time.time()
 
 
 def insert_card(dock, card):
@@ -132,23 +126,20 @@ def send_to_seconds(message, seconds, person):
 
 
 def marker_function():
-    global old_time
     do_marker_countdown = 0
     to_seconds = 0.3
-    multiplier = 25
+    multiplier = 4
     while do_marker_countdown < to_seconds:
-        delta_time = time.time() - old_time
-        do_marker_countdown += delta_time * multiplier
-        print(do_marker_countdown * 10 /3 )
-        send_to_all(pickle.dumps([7, do_marker_countdown * 10 / 3]))
+        do_marker_countdown += 0.000005 * multiplier
+        new_time = do_marker_countdown * 10 / 3
+        print(new_time)
+        send_to_all(pickle.dumps([7, new_time]))
     send_to_all(pickle.dumps([8]))
     quit()
 
 
 def play():
-    global players, player_list, conn, addr, g_data, stop_sending, max_player
-    start_delta_time = threading.Thread(target=old_time_updater, args=(), daemon=True)
-    start_delta_time.start()
+    global players, player_list, conn, addr, g_data, stop_sending, max_player, marker_received
 
     current_player = 0
     answered_player = 0
@@ -201,6 +192,7 @@ def play():
                             conn[c_data[1] + 1].send(pickle.dumps([3, card_to_send]))
                             players[c_data[1] + 1] = insert_card(players[c_data[1] + 1], card_to_send)
                     elif c_data[0] == 5:
+                        marker_received = True
                         if debugging:
                             print("I GOT THE MARKER")
                         marker_function()

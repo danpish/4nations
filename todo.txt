@@ -24,6 +24,7 @@ fix/improve:
     ##improve the code in server responsible for sending message for 0.1 seconds
     ##fix marker texture issues
     ##add selector for marker if possible
+    ##figure out this deltatime thing
 
 beta
 add:
