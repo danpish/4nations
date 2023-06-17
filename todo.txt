@@ -14,7 +14,7 @@ fix/improve:
         ##support for pause menu
         ##add victory condition
         ##add support for country selection
-        ##add address & port selection
+        ==add address & port selection
 
     settings:
         ==speed of cards rotation(If sphere mode is activated)
@@ -24,7 +24,6 @@ fix/improve:
     ##improve the code in server responsible for sending message for 0.1 seconds
     ##fix marker texture issues
     ##add selector for marker if possible
-    ##figure out this deltatime thing
 
 beta
 add:

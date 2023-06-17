@@ -129,11 +129,14 @@ def marker_function():
     do_marker_countdown = 0
     to_seconds = 0.3
     multiplier = 4
+    delta_time = 0
     while do_marker_countdown < to_seconds:
-        do_marker_countdown += 0.000005 * multiplier
+        t0 = time.time()
+        do_marker_countdown += delta_time * 0.1 * multiplier
         new_time = do_marker_countdown * 10 / 3
         print(new_time)
         send_to_all(pickle.dumps([7, new_time]))
+        delta_time = time.time() - t0
     send_to_all(pickle.dumps([8]))
     quit()
 
