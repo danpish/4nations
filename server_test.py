@@ -40,6 +40,7 @@ Net functions / data[0]
 5 = receive marker obtained
 6 = card obtained
 7 = marker countdown value
+99 = emergency exit
 ... for further additions
 """
 
@@ -91,10 +92,23 @@ def receiver(receive_from):  # kind of pathetic. but you got to do what you got 
         g_data = pickle.loads(l_data)
 
 
+def emergency_exit():
+    global conn
+    for x in range(len(conn)):
+        try:
+            conn[x].send(pickle.dumps([99]))
+        except:
+            print(f"could not connect to player {x}")
+    quit()
+
+
 def send_to_all(message):
     global conn
     for x in range(len(conn)):
-        conn[x].send(message)
+        try:
+            conn[x].send(message)
+        except socket.error as e:
+            emergency_exit()
 
 
 def insert_card(dock, card):

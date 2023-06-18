@@ -19,7 +19,6 @@ fix/improve:
         ##full-screened?
         //language(If supported by ursina)
 
-    ##improve the code in server responsible for sending message for 0.1 seconds
     ##fix marker texture issues
     ##add selector for marker if possible
     ==code needs cleaning up

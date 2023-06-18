@@ -26,6 +26,7 @@ count_down_value = 0
 timer_exist = None
 o_marker = None
 card_rotation_speed = 4
+is_server_shuted_down = False
 
 def card_movement_diagram(value):
     return (value - 1.6) ** 3 * (1 / 8) + 0.5
@@ -309,7 +310,11 @@ def reset_menu_ui():
     Joingame_join_address_port.enabled = False
     Joingame_back_address_port.enabled = False
 
-def exit_game():
+    Server_shutdown_message.enabled = False
+    Server_shutdown_exit.enabled = False
+    Server_shutdown_back.enabled = False
+
+def exit_game(dont_exit = False):
     global testing
     for cards in range(4):
         if current_dock[cards]:
@@ -321,8 +326,19 @@ def exit_game():
     reset_menu_ui()
     show_main_menu()
     Ingame_back.enabled = False
-    if not testing:
+    if not testing and not dont_exit:
         application.quit()
+
+
+def server_shuted_down():
+    global is_server_shuted_down
+    is_server_shuted_down = True
+    exit_game(True)
+    Main_menu_back.enabled = True
+    reset_menu_ui()
+    Server_shutdown_exit.enabled = True
+    Server_shutdown_message.enabled = True
+    Server_shutdown_back.enabled = True
 
 
 def on_start():
@@ -382,6 +398,8 @@ def music_mode_change():
         Settings_menu_music.color = color.green
 
 def join_function():
+    global is_server_shuted_down
+    is_server_shuted_down = False
     address = Joingame_input_address.text
     port = Joingame_input_port.text
     client.connect(address, int(port))
@@ -404,10 +422,10 @@ def single_player_test():
 
 
 def multiplayer_thread():
-    global did_recive_4, send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled, count_down_value, marker_counting_down
+    global did_recive_4, send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled, count_down_value, marker_counting_down, is_server_shuted_down
     testing = False
     count_Down_obj = False
-    while True:
+    while not is_server_shuted_down:
         try:
             data = client.recive_data()
         except socket.error as e:
@@ -431,6 +449,8 @@ def multiplayer_thread():
                     count_down_value = data[1]
                 elif data[0] == 8:
                     application.quit()
+                elif data[0] == 99:
+                    server_shuted_down()
                 if send_card:
                     #print(data[0])
                     if data[0] == 22:
@@ -501,7 +521,7 @@ start_text = Text(parent=Main_menu_start, text="Start", position=(-0.15, 0.1, 0)
 settings_text = Text(parent=Main_menu_settings, text="Settings", position=(-0.15, 0.1, 0), scale=5)
 exit_text = Text(parent=Main_menu_exit, text="Exit", position=(-0.15, 0.1, 0), scale=5)
 #address bar and port function
-Joingame_input_address = InputField(label = "address", max_lines=1, character_limit=15, y=.1)
+Joingame_input_address = InputField(label = "address", max_lines=1, character_limit=15, y=.1,default_value="127.0.0.1")
 Joingame_input_port = InputField(label="port", max_lines=1, character_limit=6, y=.0, default_value="8008")
 Joingame_join_address_port = Button(parent = Main_menu_back,scale=(0.2,0.1), position=(-0.1, -0.3, -0.1))
 Joingame_back_address_port = Button(parent = Main_menu_back,scale=(0.2,0.1), position=(0.1, -0.3, -0.1))
@@ -513,13 +533,17 @@ Joingame_join_address_port.enabled = False
 Joingame_back_address_port.enabled = False
 Ingame_back = Button(scale=.1, text = "back", position=Vec2(0, 0.45))
 Ingame_back.enabled = False
-
+Server_shutdown_message = Text(parent=Main_menu_back,text="server has shuted down", scale=2, position=Vec3(-.3, 0,-0.1))
+Server_shutdown_back = Button(parent=Main_menu_back,scale=.2, position = Vec3(-0.1,-0.3,-0.1))
+Server_shutdown_exit = Button(parent=Main_menu_back,scale=.2, position = Vec3(0.1,-0.3,-0.1))
+Server_shutdown_back_text = Text(parent=Server_shutdown_back, text="back", position=(-0.15, 0.1, 0), scale=5)
+Server_shutdown_exit_text = Text(parent=Server_shutdown_exit, text="exit", position=(-0.15, 0.1, 0), scale=5)
+Server_shutdown_back.enabled = False
+Server_shutdown_exit.enabled = False
+Server_shutdown_message.enabled = False
 
 waiting_for_players = Text(text="waiting for players", position=Vec3(-0.2, 0, 10), scale=(2))
 waiting_for_players.visible = False
-
-
-
 
 Main_menu_exit.on_click = application.quit
 Main_menu_start.on_click = on_start
@@ -531,6 +555,8 @@ Settings_menu_back.on_click = show_main_menu
 Joingame_back_address_port.on_click = on_start
 Joingame_join_address_port.on_click = join_function
 Ingame_back.on_click = exit_game
+Server_shutdown_back.on_click = show_main_menu
+Server_shutdown_exit.on_click = application.quit
 
 Settings_menu_card_rotation_speed.on_value_changed = change_ball_country_rotate
 
