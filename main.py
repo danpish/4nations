@@ -7,7 +7,7 @@ import pickle
 import threading
 import time
 
-current_dock = [1, 2, 3, 0, 0]#Dock data currently in the client
+current_dock = [None, None, None, None, None]#Dock data currently in the client
 received_dock = [1, 2, 3, 0, 0]#Dock data received from the server
 
 debugging_enabled = False
@@ -26,6 +26,7 @@ count_down_value = 0
 timer_exist = None
 o_marker = None
 card_rotation_speed = 4
+
 def card_movement_diagram(value):
     return (value - 1.6) ** 3 * (1 / 8) + 0.5
 
@@ -241,7 +242,7 @@ class timer(Entity):
 
 
 def on_begin(testing):
-    global received_dock, is_mouse_down, was_mouse_down, o_marker
+    global received_dock, is_mouse_down, was_mouse_down, o_marker, table
     Main_menu_back.enabled = False
     Joingame_input_port.enabled , Joingame_input_address.enabled = False, False
 
@@ -250,7 +251,9 @@ def on_begin(testing):
     current_dock[2] = Cards((0.9, 0, 10), int(received_dock[2]), 2)
     current_dock[3] = Cards((2, 0, 10), int(received_dock[3]), 3)
 
+    Ingame_back.enabled = True
     if not testing:
+        Ingame_back.text = "Exit"
         for cards in range(4):
             current_dock[cards].visible = False
         waiting_for_players.visible = True
@@ -306,6 +309,20 @@ def reset_menu_ui():
     Joingame_join_address_port.enabled = False
     Joingame_back_address_port.enabled = False
 
+def exit_game():
+    global testing
+    for cards in range(4):
+        if current_dock[cards]:
+            current_dock[cards].disable()
+    if o_marker and table:
+        o_marker.disable()
+        table.disable()
+    Main_menu_back.enabled = True
+    reset_menu_ui()
+    show_main_menu()
+    Ingame_back.enabled = False
+    if not testing:
+        application.quit()
 
 
 def on_start():
@@ -365,8 +382,8 @@ def music_mode_change():
         Settings_menu_music.color = color.green
 
 def join_function():
-    address = input_address.text
-    port = input_port.text
+    address = Joingame_input_address.text
+    port = Joingame_input_port.text
     client.connect(address, int(port))
     x = threading.Thread(target=multiplayer_thread, args=(), daemon=True)
     time.sleep(0.1)
@@ -485,7 +502,7 @@ settings_text = Text(parent=Main_menu_settings, text="Settings", position=(-0.15
 exit_text = Text(parent=Main_menu_exit, text="Exit", position=(-0.15, 0.1, 0), scale=5)
 #address bar and port function
 Joingame_input_address = InputField(label = "address", max_lines=1, character_limit=15, y=.1)
-Joingame_input_port = InputField(label="port", max_lines=1, character_limit=6, y=.0)
+Joingame_input_port = InputField(label="port", max_lines=1, character_limit=6, y=.0, default_value="8008")
 Joingame_join_address_port = Button(parent = Main_menu_back,scale=(0.2,0.1), position=(-0.1, -0.3, -0.1))
 Joingame_back_address_port = Button(parent = Main_menu_back,scale=(0.2,0.1), position=(0.1, -0.3, -0.1))
 Joingame_join_button_label = Text(parent=Joingame_join_address_port, text="Join", scale=(5, 20), position=(-0.2, 0.2, 0))
@@ -494,7 +511,8 @@ Joingame_input_address.enabled = False
 Joingame_input_port.enabled = False
 Joingame_join_address_port.enabled = False
 Joingame_back_address_port.enabled = False
-
+Ingame_back = Button(scale=.1, text = "back", position=Vec2(0, 0.45))
+Ingame_back.enabled = False
 
 
 waiting_for_players = Text(text="waiting for players", position=Vec3(-0.2, 0, 10), scale=(2))
@@ -512,6 +530,7 @@ Main_menu_settings.on_click = open_settings_menu
 Settings_menu_back.on_click = show_main_menu
 Joingame_back_address_port.on_click = on_start
 Joingame_join_address_port.on_click = join_function
+Ingame_back.on_click = exit_game
 
 Settings_menu_card_rotation_speed.on_value_changed = change_ball_country_rotate
 

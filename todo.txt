@@ -4,8 +4,8 @@
 
 alpha
 add:
-    ##pause menu
-    ##add country selection menu
+    ==pause menu
+    ==add country selection menu
 
 
 fix/improve:
@@ -29,3 +29,4 @@ add:
     finish alpha first
     improve look and feel
     add optimization settings
+    add tutorials
