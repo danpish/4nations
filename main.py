@@ -429,7 +429,7 @@ def multiplayer_thread():
         try:
             data = client.recive_data()
         except socket.error as e:
-            print(e)
+            server_shuted_down()
             data = None
         if data:
             try:
