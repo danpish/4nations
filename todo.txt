@@ -4,24 +4,18 @@
 
 alpha
 add:
-    ==pause menu
-    ==add country selection menu
-
-
 fix/improve:
 	
     full network implementation:
-        ##support for pause menu
         ##add victory condition
-        ##add support for country selection
+        ==add support for country selection
 
     settings:
         ##full-screened?
         //language(If supported by ursina)
 
-    ##fix marker texture issues
-    ##add selector for marker if possible
-    ==code needs cleaning up
+    //fix marker texture issues
+    //add selector for marker if possible
 
 beta
 add:

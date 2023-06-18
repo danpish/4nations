@@ -244,8 +244,8 @@ class timer(Entity):
 
 def on_begin(testing):
     global received_dock, is_mouse_down, was_mouse_down, o_marker, table
+    reset_menu_ui()
     Main_menu_back.enabled = False
-    Joingame_input_port.enabled , Joingame_input_address.enabled = False, False
 
     current_dock[0] = Cards((-2, 0, 10), int(received_dock[0]), 0)
     current_dock[1] = Cards((-0.9, 0, 10), int(received_dock[1]), 1)
@@ -314,6 +314,12 @@ def reset_menu_ui():
     Server_shutdown_exit.enabled = False
     Server_shutdown_back.enabled = False
 
+    Countryselect_test_button.enabled = False
+    Countryselect_select_1.enabled = False
+    Countryselect_select_2.enabled = False
+    Countryselect_back_button.enabled = False
+
+
 def exit_game(dont_exit = False):
     global testing
     for cards in range(4):
@@ -347,6 +353,7 @@ def on_start():
     Main_menu_test.enabled = True
     Main_menu_join.enabled = True
     Main_menu_go_back.enabled = True
+    Countryselect_test_button.enabled = True
 
 
 def show_main_menu():
@@ -355,6 +362,18 @@ def show_main_menu():
     Main_menu_text.enabled = True
     Main_menu_settings.enabled = True
     Main_menu_exit.enabled = True
+
+def change_countries(value):
+    global textures
+    if value == 1:
+        textures = ["ir", "fr", "am", "ar"]
+        Countryselect_select_1.color = color.black90
+        Countryselect_select_2.color = color.black66
+    elif value == 2:
+        textures = ["ph", "bt", "kz", "rs"]
+        Countryselect_select_2.color = color.black90
+        Countryselect_select_1.color = color.black66
+
 
 def open_settings_menu():
     reset_menu_ui()
@@ -419,6 +438,14 @@ def single_player_test():
     testing = True
     send_card = True
     time.sleep(0.5)#Increase performance hopefully
+
+def test_country_select():
+    reset_menu_ui()
+    Countryselect_select_1.enabled = True
+    Countryselect_select_2.enabled = True
+    Countryselect_back_button.enabled = True
+    Countryselect_test_button.enabled = True
+    Countryselect_test_button.enabled = False
 
 
 def multiplayer_thread():
@@ -541,6 +568,17 @@ Server_shutdown_exit_text = Text(parent=Server_shutdown_exit, text="exit", posit
 Server_shutdown_back.enabled = False
 Server_shutdown_exit.enabled = False
 Server_shutdown_message.enabled = False
+Countryselect_test_button = Button(scale=0.1, position=Vec2(0.45,0.45), text="country \nselect\n test")
+Countryselect_back_button = Button(parent=Main_menu_back, position=Vec3(0.0,-0.3,-0.1), scale=.2)
+Countryselect_select_1 = Button(parent=Main_menu_back, position=Vec3(0.0,0.1,-0.1), scale=(0.8, 0.2))
+Countryselect_select_2 = Button(parent=Main_menu_back, position=Vec3(0.0,-0.1,-0.1), scale=(0.8, 0.2))
+Countryselect_back_text = Text(parent = Countryselect_back_button, text="Back",position=(-0.15, 0.1, 0), scale=5)
+Countryselect_1_text = Text(parent = Countryselect_select_1, text="IRAN, ARMENIA, FRANCE, ARGENTINA",position=(-0.45, 0.1, 0), scale=(5/4 * 7.3/5, 7.3))
+Countryselect_2_text = Text(parent = Countryselect_select_2, text="Bhutan, Kazakhstan, Serbia ,Philippines".upper(),position=(-0.45, 0.1, 0), scale=(5/4 * 7.3/5, 7.3))
+Countryselect_select_1.enabled = False
+Countryselect_select_2.enabled = False
+Countryselect_back_button.enabled = False
+Countryselect_test_button.enabled = False
 
 waiting_for_players = Text(text="waiting for players", position=Vec3(-0.2, 0, 10), scale=(2))
 waiting_for_players.visible = False
@@ -557,6 +595,11 @@ Joingame_join_address_port.on_click = join_function
 Ingame_back.on_click = exit_game
 Server_shutdown_back.on_click = show_main_menu
 Server_shutdown_exit.on_click = application.quit
+Countryselect_test_button.on_click = test_country_select
+Countryselect_back_button.on_click = on_start
+Countryselect_select_1.on_click = lambda: change_countries(1)
+Countryselect_select_2.on_click = lambda: change_countries(2)
+
 
 Settings_menu_card_rotation_speed.on_value_changed = change_ball_country_rotate
 
