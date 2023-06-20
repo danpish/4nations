@@ -2,6 +2,7 @@ import socket
 import pickle
 import threading
 import time
+import os.path
 
 debugging = False
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP connection(again hopefully)
@@ -18,6 +19,7 @@ received_data = False
 max_player = 2
 stop_sending = False
 marker_received = False
+config_name = "sconfig.txt"
 """
     country codes
     IR = 0

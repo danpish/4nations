@@ -6,27 +6,35 @@ import socket
 import pickle
 import threading
 import time
+from configparser import ConfigParser
+import os.path
 
 current_dock = [None, None, None, None, None]#Dock data currently in the client
 received_dock = [1, 2, 3, 0, 0]#Dock data received from the server
 
-debugging_enabled = False
+#Game values
 is_mouse_down = False
 was_mouse_down = True
 send_card = False#Global card sending permission
 connected_ID = 255
 testing = False
 g_data = None
-card_mode = "round"  # Options = round , card
-music_enabled = False
 do_delete_card = 0#Values = 0(invalid)/ 2(correct)/ 1(incorrect)
 did_recive_4 = False
 marker_counting_down = False
 count_down_value = 0
 timer_exist = None
 o_marker = None
-card_rotation_speed = 4
 is_server_shuted_down = False
+config_name = "cconfig.txt"
+
+#Settings values
+card_mode = "round"  # Options = round , card
+music_enabled = False
+card_rotation_speed = 4
+debugging_enabled = False
+
+settings = ConfigParser()
 
 def card_movement_diagram(value):
     return (value - 1.6) ** 3 * (1 / 8) + 0.5
@@ -390,8 +398,11 @@ def open_settings_menu():
     Settings_menu_card_rotation_speed.enabled = True
 
 def change_ball_country_rotate():
-    global card_rotation_speed
+    global card_rotation_speed, settings, config_name
     card_rotation_speed = Settings_menu_card_rotation_speed.value
+    settings["CLIENT"]["CARD_SPEED"] = f"{Settings_menu_card_rotation_speed.value}"
+    config_file = open(config_name, "w")
+    settings.write(config_file)
 
 def open_join_menu():
     reset_menu_ui()
@@ -402,12 +413,15 @@ def open_join_menu():
 
 
 def card_mode_change():
-    global card_mode
+    global card_mode, settings, config_name
     if card_mode == "round":
         card_mode = "card"
     else:
         card_mode = "round"
     Settings_menu_card_stat.text = card_mode
+    settings["CLIENT"]["CARD_MODE"] = card_mode
+    config_file = open(config_name, "w")
+    settings.write(config_file)
 
 def music_mode_change():
     global music_enabled
@@ -415,6 +429,9 @@ def music_mode_change():
     Settings_menu_music.color = color.red
     if music_enabled:
         Settings_menu_music.color = color.green
+    settings["CLIENT"]["MUSIC_ENABLED"] = f"{music_enabled}"
+    config_file = open(config_name, "w")
+    settings.write(config_file)
 
 def join_function():
     global is_server_shuted_down
@@ -497,6 +514,25 @@ window.borderless = False
 window.exit_button.visible = False
 window.exit_button.enabled = False
 window.fps_counter.visible = True
+
+#settings load and create file when missing
+if os.path.isfile(config_name):
+    settings.read(config_name)
+    try:
+        card_mode = settings["CLIENT"]["CARD_MODE"]
+        music_enabled = bool(settings["CLIENT"]["MUSIC_ENABLED"] == "True")
+        card_rotation_speed = float(settings["CLIENT"]["CARD_SPEED"])
+        debugging_enabled = bool(settings["CLIENT"]["DEBUGGING"] == "True")
+    except:
+        settings["CLIENT"] = {"CARD_MODE": "round", "MUSIC_ENABLED": "False", "CARD_SPEED": 4.0, "DEBUGGING": "False"}
+        config_file = open(config_name, "w")
+        settings.write(config_file)
+else:
+    settings["CLIENT"] = {"CARD_MODE" : "round", "MUSIC_ENABLED": "False", "CARD_SPEED": 4.0, "DEBUGGING": "False"}
+    config_file = open(config_name, "w")
+    settings.write(config_file)
+
+
 # Main menu
 # Oh ...erm ... Apparently, according to clean code, comments are for losers
 Main_menu_back = Entity(model="quad", color=color.gray, position=(0, 0, 3))
@@ -540,6 +576,9 @@ Settings_menu_super_title.enabled = False
 Settings_menu_super_stat.enabled = False
 Settings_menu_music.on_click = music_mode_change
 Settings_menu_card_button.on_click = card_mode_change
+Settings_menu_music.color = color.red
+if music_enabled:
+    Settings_menu_music.color = color.green
 
 your_turn_text = Text(text="your turn", position=(-0.5, 0.5, 0), color=color.green)
 your_turn_text.enabled = False
