@@ -361,7 +361,7 @@ def on_start():
     Main_menu_test.enabled = True
     Main_menu_join.enabled = True
     Main_menu_go_back.enabled = True
-    Countryselect_test_button.enabled = True
+    #Countryselect_test_button.enabled = True
 
 
 def show_main_menu():
@@ -440,8 +440,8 @@ def join_function():
     port = Joingame_input_port.text
     client.connect(address, int(port))
     x = threading.Thread(target=multiplayer_thread, args=(), daemon=True)
-    time.sleep(0.1)
     x.start()
+    time.sleep(0.1)
     on_begin(False)
 
 def test_function():
@@ -482,6 +482,7 @@ def multiplayer_thread():
                 if data[0] == 1:
                     connected_ID = data[2]
                     received_dock = data[1]
+                    change_countries(data[3])
                 elif data[0] == 3:
                     if debugging_enabled:
                         print(f"received {data}")

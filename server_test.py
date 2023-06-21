@@ -2,6 +2,7 @@ import socket
 import pickle
 import threading
 import time
+from configparser import ConfigParser
 import os.path
 
 debugging = False
@@ -20,6 +21,11 @@ max_player = 2
 stop_sending = False
 marker_received = False
 config_name = "sconfig.txt"
+
+# settings values
+country_themes = 1
+settings = ConfigParser()
+
 """
     country codes
     IR = 0
@@ -48,7 +54,7 @@ Net functions / data[0]
 
 
 def join_all_players():
-    global players, player_list, conn, addr, all_players_in, max_player
+    global players, player_list, conn, addr, all_players_in, max_player, country_themes
 
     while not all_players_in:
 
@@ -60,7 +66,7 @@ def join_all_players():
         for x in range(len(player_list)):
             if not player_list[x]:
                 player_list[x] = True
-                c_conn.send(pickle.dumps([1, players[x], x]))
+                c_conn.send(pickle.dumps([1, players[x], x, country_themes]))
                 conn.append(c_conn)
                 addr.append(c_addr)
                 break
@@ -229,8 +235,25 @@ def play():
             current_player = 0
 
 
+def set_settings():
+    global settings, country_themes
+    if os.path.isfile(config_name):
+        try:
+            settings.read(config_name)
+            country_themes = int(settings["SERVER"]["COUNTRY_THEME"])
+        except:
+            settings["SERVER"] = { "COUNTRY_THEME" : country_themes }
+            open_file = open(config_name, "w")
+            settings.write(open_file)
+    else:
+        settings["SERVER"] = {"COUNTRY_THEME": country_themes}
+        open_file = open(config_name, "w")
+        settings.write(open_file)
+
+
 def main():
-    global players, player_list
+    global players, player_list, country_themes, settings
+    set_settings()
     join_all_players()
     play()
 

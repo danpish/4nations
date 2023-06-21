@@ -8,7 +8,8 @@ fix/improve:
 	
     full network implementation:
         ##add victory condition
-        ==add support for country selection
+        ##tell reason for server shutting_down(ex: server exited, you won, you lost, player left, disconnected from server)
+        ==find proper solution for packet loss
 
     settings:
         ##full-screened?
