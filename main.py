@@ -12,6 +12,8 @@ import os.path
 current_dock = [None, None, None, None, None]#Dock data currently in the client
 received_dock = [1, 2, 3, 0, 0]#Dock data received from the server
 
+current_step = 0
+
 #Game values
 is_mouse_down = False
 was_mouse_down = True
@@ -27,21 +29,21 @@ timer_exist = None
 o_marker = None
 is_server_shuted_down = False
 config_name = "cconfig.txt"
+infinite_retries = True
+
+settings = ConfigParser()
 
 #Settings values
 card_mode = "round"  # Options = round , card
 music_enabled = False
-card_rotation_speed = 4
+card_rotation_speed = 1
 debugging_enabled = False
-
-settings = ConfigParser()
 
 def card_movement_diagram(value):
     return (value - 1.6) ** 3 * (1 / 8) + 0.5
 
-
 def update():
-    global camera_position_z, g_data, send_card, did_recive_4, timer_exist, o_marker
+    global camera_position_z, g_data, send_card, did_recive_4, timer_exist, o_marker, current_step
     camera_position_z = 0
     camera.position = (0, 0, camera_position_z)
     if g_data:
@@ -51,8 +53,12 @@ def update():
                 print(u_data)
             if u_data[0] == 7 and not timer_exist:
                 timer_exist = timer(o_marker)
+
+
             your_turn_text.enabled = u_data[1] == connected_ID
             send_card = u_data[1] == connected_ID
+
+
     else:
         send_card = False
     if did_recive_4:
@@ -151,6 +157,7 @@ class Cards(Entity):
             self.static_y_position + card_movement_diagram(self.xpos) + (int(card_mode == "card") * 0.5),
             self.position.z,
         )
+        retry = 20
         if self.is_clicked() and self.visible:
             do_delete = False
 
@@ -158,18 +165,25 @@ class Cards(Entity):
                 do_delete = True
             if not testing:
                 if do_delete and send_card:
-                    client.send_data([6, connected_ID, self.slot_position])
+                    client.send_data([6, connected_ID, self.slot_position, current_step])
                     if debugging_enabled:
                         print(f"i should send data and my ID is : {connected_ID}")
-                    while do_delete_card == 0:
+                    while do_delete_card == 0 and retry > 0:
+                        if not infinite_retries:
+                            retry -= 1
+                        client.send_data([6, connected_ID, self.slot_position, current_step])
                         if debugging_enabled:
-                            time.sleep(0.05)
+                            time.sleep(0.2)
                             print(f"client side do_send_card = {do_delete_card}")
+                    if not retry > 0:
+                        print("failed to connect to server")
+                        application.quit()
                     if do_delete_card:
                         if do_delete_card == 1:
                             send_card = False
                             print("done")
                             current_dock[self.slot_position] = ""
+                            # client.send_data([45, connected_ID])
                             self.disable()
                         elif do_delete_card == 2:
                             print("not your turn")
@@ -344,7 +358,7 @@ def exit_game(dont_exit = False):
         application.quit()
 
 
-def server_shuted_down():
+def server_shuted_down(message):
     global is_server_shuted_down
     is_server_shuted_down = True
     exit_game(True)
@@ -352,6 +366,7 @@ def server_shuted_down():
     reset_menu_ui()
     Server_shutdown_exit.enabled = True
     Server_shutdown_message.enabled = True
+    Server_shutdown_message.text = f"server shutted down with \n error message: {message}"
     Server_shutdown_back.enabled = True
 
 
@@ -454,7 +469,6 @@ def single_player_test():
     global testing, send_card
     testing = True
     send_card = True
-    time.sleep(0.5)#Increase performance hopefully
 
 def test_country_select():
     reset_menu_ui()
@@ -466,7 +480,7 @@ def test_country_select():
 
 
 def multiplayer_thread():
-    global did_recive_4, send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled, count_down_value, marker_counting_down, is_server_shuted_down
+    global did_recive_4, send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled, count_down_value, marker_counting_down, is_server_shuted_down, current_step
     testing = False
     count_Down_obj = False
     while not is_server_shuted_down:
@@ -479,31 +493,33 @@ def multiplayer_thread():
             try:
                 data = pickle.loads(data)
                 g_data = data
-                if data[0] == 1:
+                if data[0] == 1: # connected to server for first time and reciving player info
                     connected_ID = data[2]
                     received_dock = data[1]
                     change_countries(data[3])
-                elif data[0] == 3:
+                elif data[0] == 2:
+                    current_step = data[2]
+                elif data[0] == 3:# received a card. adding it to list and sending confirmation
                     if debugging_enabled:
                         print(f"received {data}")
                     card_adder(data[1])
+                    for seconds in range(100):
+                        time.sleep(0.05)
+                        # client.send_data([44, connected_ID])
                 elif data[0] == 4:
                     did_recive_4 = True
-                elif data[0] == 7:
+                elif data[0] == 7:# server recevied marker request and is sending countdown result
                     marker_counting_down = True
                     count_down_value = data[1]
                 elif data[0] == 8:
                     application.quit()
                 elif data[0] == 99:
-                    server_shuted_down()
+                    server_shuted_down(data[1])
                 if send_card:
                     #print(data[0])
-                    if data[0] == 22:
+                    if data[0] == 22: # recevied confirmation that card sending request has been successfully transfared
                         do_delete_card = 1
-                        time.sleep(0.2)
-                    elif data[0] == 21:
-                        do_delete_card = 2
-                    #print(f"server side do_send_data = {do_delete_card}")
+                        time.sleep(0.2)#wait for cards to work with the informaton without rewriting with future messages
                 else:
                     do_delete_card = 0
             except:
@@ -563,7 +579,7 @@ Settings_menu_music_title = Text(parent=Main_menu_back, position=(-0.3, -0.1, -0
 Settings_menu_super = Button(parent=Main_menu_back, scale=0.2, position=(0.3, -0.3, -0.1))
 Settings_menu_super_title = Text(parent=Main_menu_back, position=(-0.3, -0.3, -0.1), text="Super mode")
 Settings_menu_super_stat = Text(parent=Settings_menu_super, scale=5, position=(-0.3, 0, -0.1), text="Never")
-Settings_menu_card_rotation_speed = Slider(min = 0, max = 100, default=card_rotation_speed, height = 0.025,x = -0.25, y = 0.14)
+Settings_menu_card_rotation_speed = Slider(min = 0, max = 20, default=card_rotation_speed, height = 0.025,x = -0.25, y = 0.14)
 Settings_menu_card_rotation_speed.enabled = False
 Settings_menu_title.enabled = False
 Settings_menu_back.enabled = False
