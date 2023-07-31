@@ -229,15 +229,13 @@ def join_all_players():
             send_to_all(pickle.dumps([4]))
 
 
-def receiver_thread_runner():
+def run_all_receiver_threads():
     global is_running, max_player
-    while is_running:
-        time.sleep(0.5) # this remove unnecessary load from the system (I hope)
-        for player in range(max_player):
-            c_thread = threading.Thread(target=receiver, args=([player]), daemon=True)
-            receiver_threads[player] = c_thread
-            c_thread = None
-            receiver_threads[player].start()
+    for player in range(max_player):
+        c_thread = threading.Thread(target=receiver, args=([player]), daemon=True)
+        receiver_threads[player] = c_thread
+        c_thread = None
+        receiver_threads[player].start()
 
 
 def play():
@@ -245,8 +243,7 @@ def play():
 
     current_player = 0
 
-    run_the_thread_runner = threading.Thread(target=receiver_thread_runner, args=(), daemon=True)
-    run_the_thread_runner.start()
+    run_all_receiver_threads()
 
     while is_running:
         card_to_send = ""
