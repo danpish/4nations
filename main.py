@@ -31,7 +31,6 @@ timer_exist = None
 o_marker = None
 is_server_shut_down = False
 config_name = "cconfig.txt"
-infinite_retries = True
 
 settings = ConfigParser()
 
@@ -158,33 +157,30 @@ class Cards(Entity):
             self.static_y_position + card_movement_diagram(self.xpos) + (int(card_mode == "card") * 0.5),
             self.position.z,
         )
-        retry = 20
         if self.is_clicked() and self.visible:
             do_delete = False
 
             if current_dock[self.slot_position] != "":
                 do_delete = True
+
             if not testing:
                 if do_delete and send_card:
-                    client.send_data([6, connected_ID, self.slot_position, current_step])
+
                     if debugging_enabled:
                         print(f"i should send data and my ID is : {connected_ID}")
-                    while do_delete_card == 0 and retry > 0:
+
+                    while do_delete_card == 0 :
                         time.sleep(0.1)
-                        if not infinite_retries:
-                            retry -= 1
                         client.send_data([6, connected_ID, self.slot_position, current_step])
+
                         if debugging_enabled:
                             print(f"client side do_send_card = {do_delete_card}")
-                    if not retry > 0:
-                        print("failed to connect to server")
-                        application.quit()
+
                     if do_delete_card:
                         if do_delete_card == 1:
                             send_card = False
                             print("done")
                             current_dock[self.slot_position] = ""
-                            # client.send_data([45, connected_ID])
                             self.disable()
                         elif do_delete_card == 2:
                             print("not your turn")

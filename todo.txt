@@ -15,6 +15,7 @@ fix/improve:
         //language(If supported by ursina)
 
     //add selector for marker if possible
+    ##add teaming to the server
     ==fix server slowdown    ***VERY SEVERE***
     ##add username to "connect to server menu" in the client
     ##save previous connected IP/Port and used username
@@ -22,6 +23,7 @@ fix/improve:
 
 beta
 add:
+    launcher
     finish alpha first
     improve look and feel
     add optimization settings

@@ -1,0 +1,25 @@
+def send_confirmation(message, confirm_code=44, person=None):
+    global conn
+    data = None
+    did_receive_confirm = False
+    conn[person].settimeout(0.1)
+    while not did_receive_confirm:
+        conn[person].send(message)
+        if debugging:
+            print(f"receive confirmation before sending attempt to {person}")
+
+        try:
+            data = conn[person].recv(1024)
+        except socket.error as e:
+            print(f"confirm receive fail with {e}")
+
+        try:
+            data = pickle.loads(data)
+        except:
+            print("decoding received data to confirm_message function failed")
+
+        if debugging:
+            print(f"received confirm loop from {person} with {data}")
+        if data:
+            if data[0] == confirm_code:
+                did_receive_confirm = True
