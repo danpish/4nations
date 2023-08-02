@@ -1,5 +1,7 @@
 """
-Network test
+4Nations
+Developed by Daniel pishyar 2022-2023
+Using ursina engine 5.x - python 3.10
 """
 from ursina import *
 import socket
