@@ -18,6 +18,7 @@ fix/improve:
     ==fix server slowdown    ***VERY SEVERE***
     ##add username to "connect to server menu" in the client
     ##save previous connected IP/Port and used username
+    //fix mouse clicked on start bug (noticeable in test game)
 
 beta
 add:

@@ -14,7 +14,6 @@ server.bind((server_address, server_port))
 server.listen()
 conn = []
 addr = []
-#g_data = None  # older one
 ga_data = []  # an array of data
 receiver_threads = [None, None, None, None]
 received_data = False
