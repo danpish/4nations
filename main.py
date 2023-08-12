@@ -52,7 +52,8 @@ def update():
         u_data = g_data
         if len(u_data) > 1:  # be sure it's not confirmation message and waiting for players
             if debugging_enabled:
-                print(u_data)
+                pass
+                # print(f"current loaded data : {u_data}")
             if u_data[0] == 7 and not timer_exist:
                 timer_exist = timer(o_marker)
 
@@ -501,6 +502,8 @@ def multiplayer_thread():
             try:
                 data = pickle.loads(data)
                 g_data = data
+                if debugging_enabled:
+                    print(f"received data is {data}")
                 if data[0] == 1:  # connected to server for first time and receiving player info
                     connected_ID = data[2]
                     received_dock = data[1]
@@ -508,8 +511,6 @@ def multiplayer_thread():
                 elif data[0] == 2:
                     current_step = data[2]
                 elif data[0] == 3:  # received a card. adding it to list and sending confirmation
-                    if debugging_enabled:
-                        print(f"received {data}")
                     card_adder(data[1])
                 elif data[0] == 4:
                     did_receive_4 = True
