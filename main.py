@@ -317,6 +317,7 @@ def reset_menu_ui():
     Main_menu_start.enabled = False
     Main_menu_settings.enabled = False
     Main_menu_exit.enabled = False
+    Main_menu_about.enabled = False
 
     Settings_menu_title.enabled = False
     Settings_menu_back.enabled = False
@@ -388,6 +389,7 @@ def show_main_menu():
     Main_menu_text.enabled = True
     Main_menu_settings.enabled = True
     Main_menu_exit.enabled = True
+    Main_menu_about.enabled = True
 
 
 def change_countries(value):
@@ -432,6 +434,8 @@ def open_join_menu():
     Joingame_join_address_port.enabled = True
     Joingame_back_address_port.enabled = True
 
+def about_screen():
+    reset_menu_ui()
 
 def card_mode_change():
     global card_mode, settings, config_name
@@ -563,6 +567,7 @@ Main_menu_text = Text(parent=Main_menu_back, position=(0, 0.4, -0.1), text="4NAT
 Main_menu_start = Button(parent=Main_menu_back, scale=0.2, position=(0, 0.1, -0.1))
 Main_menu_settings = Button(parent=Main_menu_back, scale=0.2, position=(0, -0.1, -0.1))
 Main_menu_exit = Button(parent=Main_menu_back, scale=0.2, position=(0, -0.3, -0.1))
+Main_menu_about = Button(parent=Main_menu_back, scale=0.1, position=(0.43, -0.43, -0.1))
 # join and host options
 Main_menu_join = Button(parent=Main_menu_back, scale=0.2, position=(0, 0.1, -0.1))
 Main_menu_test = Button(parent=Main_menu_back, scale=0.2, position=(0, -0.1, -0.1))
@@ -609,6 +614,7 @@ your_turn_text.enabled = False
 start_text = Text(parent=Main_menu_start, text="Start", position=(-0.15, 0.1, 0), scale=5)
 settings_text = Text(parent=Main_menu_settings, text="Settings", position=(-0.15, 0.1, 0), scale=5)
 exit_text = Text(parent=Main_menu_exit, text="Exit", position=(-0.15, 0.1, 0), scale=5)
+about_text = Text(parent=Main_menu_about, text="about", position=(-0.3, 0.1, 0), scale=10)
 # address bar and port function
 Joingame_input_address = InputField(label="address", max_lines=1, character_limit=15, y=.1, default_value="127.0.0.1")
 Joingame_input_port = InputField(label="port", max_lines=1, character_limit=6, y=.0, default_value="8008")
@@ -666,6 +672,16 @@ Countryselect_test_button.on_click = test_country_select
 Countryselect_back_button.on_click = on_start
 Countryselect_select_1.on_click = lambda: change_countries(1)
 Countryselect_select_2.on_click = lambda: change_countries(2)
+Main_menu_about.on_click = about_screen
+about_descripton="""and thus this is a place holder text for about
+that you are about to see
+in this place holder text box
+"""
+
+About_Info = TextField(parent=Main_menu_back,max_lines=25, active=False, scale=1,position=(-0.43,0.43,-0.1), text=about_descripton)
+About_Info.render()
+
+
 
 Settings_menu_card_rotation_speed.on_value_changed = change_ball_country_rotate
 
