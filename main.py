@@ -511,9 +511,6 @@ def multiplayer_thread():
                     if debugging_enabled:
                         print(f"received {data}")
                     card_adder(data[1])
-                    for seconds in range(100):
-                        time.sleep(0.05)
-                        # client.send_data([44, connected_ID])
                 elif data[0] == 4:
                     did_receive_4 = True
                 elif data[0] == 7:  # server received marker request and is sending countdown result

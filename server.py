@@ -73,14 +73,12 @@ def emergency_exit(error):
 
 
 def send_to_all(message):
-    global conn
-    for x in range(len(conn)):
+    global conn, max_player
+    for each_player in range(max_player):
         try:
-            conn[x].send(message)
+            conn[each_player].send(message)
         except socket.error as e:
-            if debugging:
-                print(e)
-            emergency_exit(e)
+            emergency_exit(f"could not connect to player {each_player}")
 
 
 def receiver(receive_from):
@@ -148,16 +146,6 @@ def insert_card(dock, card):
     return improved_dock
 
 
-def send_to_seconds(message, seconds, person):
-    global conn
-    person = int(person)
-    passed_milli_sec = 0
-    while passed_milli_sec < seconds:
-        time.sleep(0.01)
-        passed_milli_sec += 0.01
-        conn[person].send(message)
-
-
 def marker_function():
     global max_player, is_running
     do_marker_countdown = 0
@@ -172,7 +160,9 @@ def marker_function():
         send_to_all(pickle.dumps([7, new_time]))
         delta_time = time.time() - t0
     for all_p in range(max_player):
-        send_to_seconds(pickle.dumps([8]), 0.1, all_p)
+        for times in range(3):
+            conn[all_p].send(pickle.dumps([8]))
+            time.sleep(0.01)
     is_running = False
 
 
@@ -240,40 +230,37 @@ def play():
 
             if ga_data:
                 if debugging:
-                    print(f"data array : {ga_data}")
+                    print(f"global array data = {ga_data}")
+
                 c_data = ga_data[0]
                 ga_data.pop(0)
                 answered_player = c_data[1]
 
                 if answered_player == current_player:
                     if c_data[0] == 6:
+
                         if debugging:
-                            print(players)
-                            print("got some data from ", end="")
-                            print(f"player {answered_player}")
-                            print(players[answered_player][c_data[2]])
+                            print(f"got some data from player {answered_player}")
+
                         card_to_send = players[answered_player][c_data[2]]
                         players[answered_player][c_data[2]] = ""
 
-                        # send_confirmation(pickle.dumps([22]), 45, answered_player)
-
-                        send_to_seconds(pickle.dumps([22]), 0.2, answered_player)
+                        conn[answered_player].send(pickle.dumps([22]))
 
                         if debugging:
                             print(f"sent confirmation to player {answered_player}")
 
                         did_player_answer = True
-                        receiver_threads[current_player] = None
-
-                        if debugging:
-                            print("send the received card to the next player")
 
                         if answered_player == max_player - 1:
-                            conn[0].send(pickle.dumps([3, card_to_send]))
+                            conn[0].sendall(pickle.dumps([3, card_to_send]))
                             players[0] = insert_card(players[0], card_to_send)
                         else:
-                            conn[answered_player + 1].send(pickle.dumps([3, card_to_send]))
+                            conn[answered_player + 1].sendall(pickle.dumps([3, card_to_send]))
                             players[answered_player + 1] = insert_card(players[answered_player + 1], card_to_send)
+
+                        if debugging:
+                            print("sent confirmation to the next player")
 
                     elif c_data[0] == 5:
                         marker_received = True
@@ -282,8 +269,8 @@ def play():
                         marker_function()
                 else:
                     if c_data[0] == 6:
-                        if answered_player == current_player - 1 and c_data[3] == step - 1:
-                            send_to_seconds(pickle.dumps([22]), 0.2, answered_player - 1)
+                        if c_data[3] == step - 1 or c_data[3] == step:
+                            conn[answered_player].send(pickle.dumps([22]))
         current_player += 1
         if current_player == max_player:
             current_player = 0
