@@ -198,7 +198,7 @@ class Cards(Entity):
                     self.disable()
 
 
-game = Ursina()
+game = Ursina(title="4Nations - dev")
 
 
 class marker(Entity):
@@ -495,7 +495,7 @@ def multiplayer_thread():
         try:
             data = client.receive_data()
         except socket.error as e:
-            server_shut_down()
+            server_shut_down("cannot connect to server")
             data = None
         if data:
             try:

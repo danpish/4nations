@@ -86,6 +86,8 @@ def send_to_all(message):
 def receiver(receive_from):
     global ga_data, conn, marker_received, is_running
 
+    retries = 0
+
     while is_running:
         if debugging:
             pass
@@ -102,7 +104,11 @@ def receiver(receive_from):
             try:
                 l_data = conn[receive_from].recv(1024)
             except socket.error as e:
-                print(f"receiver failed receiving with error : {e}")
+                print(f"{retries} : receiver failed receiving with error : {e}")
+                time.sleep(0.1)
+                retries += 1
+                if retries > 20:
+                    emergency_exit(e)
 
         if l_data:
             ga_data.append(pickle.loads(l_data))
@@ -171,22 +177,20 @@ def marker_function():
 
 
 def join_all_players():
-    global players, player_list, conn, addr, all_players_in, max_player, country_themes
+    global players, player_list, conn, all_players_in, max_player, country_themes
 
     while not all_players_in:
-
         c_conn, c_addr = server.accept()
 
         if debugging:
             print("got connection from " + str(c_addr))
-
-        for x in range(len(player_list)):
-            if not player_list[x]:
-                player_list[x] = True
-                c_conn.send(pickle.dumps([1, players[x], x, country_themes]))
-                conn.append(c_conn)
-                addr.append(c_addr)
-                break
+        if c_conn:
+            for x in range(len(player_list)):
+                if not player_list[x]:
+                    player_list[x] = True
+                    c_conn.send(pickle.dumps([1, players[x], x, country_themes]))
+                    conn.append(c_conn)
+                    break
 
         if debugging:
             print(len(conn))
@@ -207,8 +211,11 @@ def run_all_receiver_threads():
         receiver_threads[player].start()
 
 
+server_play_loop = 0
+
+
 def play():
-    global players, player_list, conn, addr, stop_sending, max_player, marker_received, is_running, ga_data, step
+    global players, player_list, conn, addr, stop_sending, max_player, marker_received, is_running, ga_data, step, server_play_loop
 
     current_player = 0
 
@@ -225,7 +232,12 @@ def play():
 
         while not did_player_answer:
             send_to_all(pickle.dumps([2, current_player, step]))
-            # print(f"player did not answer loop")
+
+            time.sleep(0.1)  # GOD FORGIVE ME IF THIS IS A MISTAKE
+
+            print(f"server Play loop {server_play_loop}")  # Performance debugging. later this should be removed
+            server_play_loop += 1
+
             if ga_data:
                 if debugging:
                     print(f"data array : {ga_data}")
