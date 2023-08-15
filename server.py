@@ -70,14 +70,12 @@ def shuffle_cards():
     countries_condition = max_player * 4
     country_cards = []
     random.seed(time.time())
-    loop_step = 0
     while countries_condition:
         random_country = random.randint(0,3)
         if countries[random_country] >= 1:
             countries[random_country] -= 1
             countries_condition -= 1
             country_cards.append(random_country)
-            loop_step += 1
     if debugging:
         print("shuffled country results : {}".format(country_cards))
     for each_player in range(max_player):
