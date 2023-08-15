@@ -345,6 +345,8 @@ def reset_menu_ui():
     Countryselect_select_2.enabled = False
     Countryselect_back_button.enabled = False
 
+    About_Info.enabled = False
+
 
 def exit_game(dont_exit=False):
     global testing
@@ -436,6 +438,8 @@ def open_join_menu():
 
 def about_screen():
     reset_menu_ui()
+    About_Info.enabled = True
+    Settings_menu_back.enabled = True
 
 def card_mode_change():
     global card_mode, settings, config_name
@@ -673,13 +677,28 @@ Countryselect_back_button.on_click = on_start
 Countryselect_select_1.on_click = lambda: change_countries(1)
 Countryselect_select_2.on_click = lambda: change_countries(2)
 Main_menu_about.on_click = about_screen
-about_descripton="""and thus this is a place holder text for about
-that you are about to see
-in this place holder text box
+about_description = """            About
+Created by Daniel Pishyar in 2022/2023
+version = Dev
+This version is coded using Ursina 5.3.0 Python 3.10.5
+Special thanks to:
+    Mohsen roohbakhsh (Mohsen Roohbakhsh)
+    Ali rahimi (alikzb)
+    Mohammad norozi
+    sohaee
+    Arsam
+    dashti (real_Mega) 
+Created for zargaran
+
+
+
+
+Brought to you by DLT
 """
 
-About_Info = TextField(parent=Main_menu_back,max_lines=25, active=False, scale=1,position=(-0.43,0.43,-0.1), text=about_descripton)
+About_Info = TextField(parent=Main_menu_back,max_lines=25, active=False, scale=1, position=(-0.43, 0.43, -0.1), text=about_description)
 About_Info.render()
+About_Info.enabled = False
 
 
 
