@@ -236,8 +236,8 @@ def play():
                 ga_data.pop(0)
                 answered_player = c_data[1]
 
-                if answered_player == current_player:
-                    if c_data[0] == 6:
+                if c_data[0] == 6:
+                    if answered_player == current_player:
 
                         if debugging:
                             print(f"got some data from player {answered_player}")
@@ -262,15 +262,16 @@ def play():
                         if debugging:
                             print("sent confirmation to the next player")
 
-                    elif c_data[0] == 5:
-                        marker_received = True
-                        if debugging:
-                            print("I GOT THE MARKER")
-                        marker_function()
-                else:
-                    if c_data[0] == 6:
+                    else:
                         if c_data[3] == step - 1 or c_data[3] == step:
                             conn[answered_player].send(pickle.dumps([22]))
+
+                if c_data[0] == 5:
+                    marker_received = True
+                    if debugging:
+                        print("I GOT THE MARKER")
+                    marker_function()
+
         current_player += 1
         if current_player == max_player:
             current_player = 0
