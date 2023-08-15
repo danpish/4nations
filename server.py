@@ -4,6 +4,7 @@ import threading
 import time
 from configparser import ConfigParser
 import os.path
+import random
 
 debugging = True
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP connection(again hopefully)
@@ -17,7 +18,7 @@ addr = []
 ga_data = []  # an array of data
 receiver_threads = [None, None, None, None]
 received_data = False
-max_player = 2
+max_player = 4
 stop_sending = False
 marker_received = False
 is_running = True
@@ -58,8 +59,30 @@ Net functions / data[0]
 def main():
     global players, player_list, country_themes, settings
     set_settings()
+    shuffle_cards()
     join_all_players()
     play()
+
+
+def shuffle_cards():
+    global players
+    countries = [max_player, max_player, max_player, max_player]
+    countries_condition = max_player * 4
+    country_cards = []
+    random.seed(time.time())
+    loop_step = 0
+    while countries_condition:
+        random_country = random.randint(0,3)
+        if countries[random_country] >= 1:
+            countries[random_country] -= 1
+            countries_condition -= 1
+            country_cards.append(random_country)
+            loop_step += 1
+    if debugging:
+        print("shuffled country results : {}".format(country_cards))
+    for each_player in range(max_player):
+        for each_card in range(4):
+            players[each_player][each_card] = country_cards[each_player * 4 + each_card]
 
 
 def emergency_exit(error):
