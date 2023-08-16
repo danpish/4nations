@@ -4,20 +4,18 @@
 
 alpha
 add:
+
+    ==add victory condition
+    ==add teaming
+
 fix/improve:
-	
-    full network implementation:
-        ==add victory condition
-        ==add username support in the server
 
     settings:
         ##full-screened?
         //language(If supported by ursina)
 
-    ==add teaming to the server
-    ==save previous connected IP/Port and used username
     //fix mouse clicked on start bug (noticeable in test game)
-    ==Remove Music option (no music available)
+    //Remove Music option (no music available)
 
 
 beta
