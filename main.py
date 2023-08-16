@@ -543,6 +543,8 @@ def multiplayer_thread():
                     count_down_value = data[1]
                 elif data[0] == 8:
                     application.quit()
+                elif data[0] == 81:
+                    client.send_data([82, connected_ID, username])
                 elif data[0] == 99:
                     server_shut_down(data[1])
                 if send_card:

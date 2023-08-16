@@ -51,6 +51,9 @@ Net functions / data[0]
 5 = receive marker obtained
 6 = card obtained
 7 = marker countdown value
+8 = send server shutdown (going to be replaced with win message)
+81 = ask player username
+82 = receive player username
 99 = emergency exit
 ... for further additions
 """
@@ -61,6 +64,8 @@ def main():
     set_settings()
     shuffle_cards()
     join_all_players()
+    run_all_receiver_threads()
+    ask_player_usernames()
     play()
 
 
@@ -130,7 +135,10 @@ def receiver(receive_from):
                     emergency_exit(e)
 
         if l_data:
-            ga_data.append(pickle.loads(l_data))
+            try:
+                ga_data.append(pickle.loads(l_data))
+            except:
+                pass
 
 
 def set_settings():
@@ -222,6 +230,22 @@ def run_all_receiver_threads():
         receiver_threads[player].start()
 
 
+def ask_player_usernames():
+    global conn, ga_data, players, max_player
+    asking_players = 0
+    while asking_players < max_player:
+        time.sleep(0.1)
+        conn[asking_players].send(pickle.dumps([81]))
+        while ga_data:
+            c_data = ga_data[0]
+            if c_data[0] == 82:
+                if c_data[1] == asking_players:
+                    players[asking_players].append(c_data[2])
+                    asking_players += 1
+            ga_data.pop(0)
+    print(f"asking usernames finished with final data : {players}")
+
+
 server_play_loop = 0
 
 
@@ -229,8 +253,6 @@ def play():
     global players, player_list, conn, addr, stop_sending, max_player, marker_received, is_running, ga_data, step, server_play_loop
 
     current_player = 0
-
-    run_all_receiver_threads()
 
     while is_running:
 
