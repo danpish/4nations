@@ -37,6 +37,9 @@ settings = ConfigParser()
 # Settings values
 card_mode = "round"  # Options = round , card
 music_enabled = False
+username = ""
+last_used_ip = None
+last_used_port = None
 card_rotation_speed = 1
 debugging_enabled = False
 
@@ -331,6 +334,7 @@ def reset_menu_ui():
     Settings_menu_super_stat.enabled = False
     Settings_menu_card_rotation_speed.enabled = False
 
+    Joingame_input_username.enabled = False
     Joingame_input_port.enabled = False
     Joingame_input_address.enabled = False
     Joingame_join_address_port.enabled = False
@@ -430,9 +434,15 @@ def change_ball_country_rotate():
 
 
 def open_join_menu():
+    global last_used_port, last_used_ip, username
     reset_menu_ui()
+    Joingame_input_username.enabled = True
     Joingame_input_address.enabled = True
     Joingame_input_port.enabled = True
+    if last_used_port and last_used_ip and username:
+        Joingame_input_username.text = username
+        Joingame_input_address.text = last_used_ip
+        Joingame_input_port.text = last_used_port
     Joingame_join_address_port.enabled = True
     Joingame_back_address_port.enabled = True
 
@@ -465,11 +475,17 @@ def music_mode_change():
 
 
 def join_function():
-    global is_server_shut_down
+    global is_server_shut_down, last_used_port, last_used_ip, settings, config_name, username, connected_ID
     is_server_shut_down = False
     address = Joingame_input_address.text
     port = Joingame_input_port.text
+    username = Joingame_input_username.text
     client.connect(address, int(port))
+    settings["CLIENT"]["USERNAME"] = username
+    settings["CLIENT"]["LAST_USED_IP"] = address
+    settings["CLIENT"]["LAST_USED_PORT"] = str(port)
+    config_file = open(config_name, "w")
+    settings.write(config_file)
     x = threading.Thread(target=multiplayer_thread, args=(), daemon=True)
     x.start()
     time.sleep(0.1)
@@ -555,12 +571,15 @@ if os.path.isfile(config_name):
         music_enabled = bool(settings["CLIENT"]["MUSIC_ENABLED"] == "True")
         card_rotation_speed = float(settings["CLIENT"]["CARD_SPEED"])
         debugging_enabled = bool(settings["CLIENT"]["DEBUGGING"] == "True")
+        username = settings["CLIENT"]["USERNAME"]
+        last_used_ip = settings["CLIENT"]["LAST_USED_IP"]
+        last_used_port = settings["CLIENT"]["LAST_USED_PORT"]
     except:
-        settings["CLIENT"] = {"CARD_MODE": "round", "MUSIC_ENABLED": "False", "CARD_SPEED": 4.0, "DEBUGGING": "False"}
+        settings["CLIENT"] = {"CARD_MODE": "round", "MUSIC_ENABLED": "False", "USERNAME": "USER", "LAST_USED_IP": "127.0.0.1", "LAST_USED_PORT": "8008", "CARD_SPEED": 4.0, "DEBUGGING": "False"}
         config_file = open(config_name, "w")
         settings.write(config_file)
 else:
-    settings["CLIENT"] = {"CARD_MODE": "round", "MUSIC_ENABLED": "False", "CARD_SPEED": 4.0, "DEBUGGING": "False"}
+    settings["CLIENT"] = {"CARD_MODE": "round", "MUSIC_ENABLED": "False", "USERNAME": "USER", "LAST_USED_IP": "127.0.0.1", "LAST_USED_PORT": "8008", "CARD_SPEED": 4.0, "DEBUGGING": "False"}
     config_file = open(config_name, "w")
     settings.write(config_file)
 
@@ -620,14 +639,16 @@ settings_text = Text(parent=Main_menu_settings, text="Settings", position=(-0.15
 exit_text = Text(parent=Main_menu_exit, text="Exit", position=(-0.15, 0.1, 0), scale=5)
 about_text = Text(parent=Main_menu_about, text="about", position=(-0.3, 0.1, 0), scale=10)
 # address bar and port function
+Joingame_input_username = InputField(label="username", max_lines=1, character_limit=25, y=.2, default_value="USER")
 Joingame_input_address = InputField(label="address", max_lines=1, character_limit=15, y=.1, default_value="127.0.0.1")
-Joingame_input_port = InputField(label="port", max_lines=1, character_limit=6, y=.0, default_value="8008")
+Joingame_input_port = InputField(label="port", max_lines=1, character_limit=6, y=.0, text="8008")
 Joingame_join_address_port = Button(parent=Main_menu_back, scale=(0.2, 0.1), position=(-0.1, -0.3, -0.1))
 Joingame_back_address_port = Button(parent=Main_menu_back, scale=(0.2, 0.1), position=(0.1, -0.3, -0.1))
 Joingame_join_button_label = Text(parent=Joingame_join_address_port, text="Join", scale=(5, 20),
                                   position=(-0.2, 0.2, 0))
 Joingame_join_regret_label = Text(parent=Joingame_back_address_port, text="Back", scale=(5, 20),
                                   position=(-0.2, 0.2, 0))
+Joingame_input_username.enabled = False
 Joingame_input_address.enabled = False
 Joingame_input_port.enabled = False
 Joingame_join_address_port.enabled = False
