@@ -18,7 +18,7 @@ addr = []
 ga_data = []  # an array of data
 receiver_threads = [None, None, None, None]
 received_data = False
-max_player = 2
+max_player = 4
 stop_sending = False
 marker_received = False
 is_running = True
@@ -50,6 +50,7 @@ Net functions / data[0]
 4 = all players has joined
 5 = receive marker obtained
 6 = card obtained
+65 = teammate username sending
 7 = marker countdown value
 8 = send server shutdown (going to be replaced with win message)
 81 = ask player username
@@ -66,6 +67,7 @@ def main():
     join_all_players()
     run_all_receiver_threads()
     ask_player_usernames()
+    regroup()
     play()
 
 
@@ -86,6 +88,38 @@ def shuffle_cards():
     for each_player in range(max_player):
         for each_card in range(4):
             players[each_player][each_card] = country_cards[each_player * 4 + each_card]
+
+
+def regroup():
+    global players, conn, max_player
+
+    available_players = []
+
+    for i in range(max_player):
+        available_players.append(i)
+    print(available_players)
+
+    step = 0
+    teaming_player = 0
+    while teaming_player < max_player and step < max_player:
+        random_player = random.randint(0, max_player - 1)
+        if random_player != teaming_player:
+            try:
+                if players[teaming_player][6] != None:
+                    teaming_player += 1
+            except:
+                try:
+                    if players[random_player][6] != None:
+                        pass
+                except:
+                    players[teaming_player].append(random_player)
+                    players[random_player].append(teaming_player)
+                    step += 2
+                    teaming_player += 1
+
+    print(f"teaming finished with the result : {players}")
+    for x in range(max_player):
+        conn[x].send(pickle.dumps([65, players[players[x][6]][5]]))
 
 
 def emergency_exit(error):

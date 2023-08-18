@@ -31,6 +31,7 @@ timer_exist = None
 o_marker = None
 is_server_shut_down = False
 config_name = "cconfig.txt"
+teammate_name = None
 
 settings = ConfigParser()
 
@@ -49,7 +50,7 @@ def card_movement_diagram(value):
 
 
 def update():
-    global g_data, send_card, did_receive_4, timer_exist, o_marker, current_step
+    global g_data, send_card, did_receive_4, timer_exist, o_marker, current_step, teammate_name
     camera.position = (0, 0, 0)
     if g_data:
         u_data = g_data
@@ -70,6 +71,9 @@ def update():
         waiting_for_players.visible = False
         for cards in range(4):
             current_dock[cards].visible = True
+    if teammate_name:
+        your_teammate_name.enabled = True
+        your_teammate_name.text = teammate_name
 
 
 textures = ["ir", "fr", "am", "ar"]  # country BALL texture
@@ -514,7 +518,7 @@ def test_country_select():
 
 
 def multiplayer_thread():
-    global did_receive_4, send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled, count_down_value, marker_counting_down, is_server_shut_down, current_step
+    global did_receive_4, send_card, received_dock, testing, connected_ID, g_data, do_delete_card, debugging_enabled, count_down_value, marker_counting_down, is_server_shut_down, current_step, teammate_name
     testing = False
     while not is_server_shut_down:
         try:
@@ -538,6 +542,8 @@ def multiplayer_thread():
                     card_adder(data[1])
                 elif data[0] == 4:
                     did_receive_4 = True
+                elif data[0] == 65:
+                    teammate_name = data[1]
                 elif data[0] == 7:  # server received marker request and is sending countdown result
                     marker_counting_down = True
                     count_down_value = data[1]
@@ -634,7 +640,9 @@ if music_enabled:
     Settings_menu_music.color = color.green
 
 your_turn_text = Text(text="your turn", position=(-0.5, 0.5, 0), color=color.green)
+your_teammate_name = Text(text="em", position=(0.5, 0.5, 0), color=color.blue)
 your_turn_text.enabled = False
+your_teammate_name.enabled = False
 # For god's sake! button text is glitched. So we define our own
 start_text = Text(parent=Main_menu_start, text="Start", position=(-0.15, 0.1, 0), scale=5)
 settings_text = Text(parent=Main_menu_settings, text="Settings", position=(-0.15, 0.1, 0), scale=5)

@@ -6,7 +6,6 @@ alpha
 add:
 
     ==add victory condition
-    ==add teaming
 
 fix/improve:
 
