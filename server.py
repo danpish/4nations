@@ -36,7 +36,7 @@ settings = ConfigParser()
     AM = 2
     AR = 3
 """
-players = [[0, 3, 1, 2, ""], [2, 1, 0, 3, ""], [3, 0, 2, 1, ""], [1, 3, 2, 0, ""]]
+players = [[0, 3, 1, 2, None], [2, 1, 0, 3, None], [3, 0, 2, 1, None], [1, 3, 2, 0, None]]
 player_list = [False, False, False, False]
 all_players_in = False
 
@@ -52,9 +52,10 @@ Net functions / data[0]
 6 = card obtained
 65 = teammate username sending
 7 = marker countdown value
-8 = send server shutdown (going to be replaced with win message)
 81 = ask player username
 82 = receive player username
+86 = won
+87 = lost
 99 = emergency exit
 ... for further additions
 """
@@ -209,7 +210,9 @@ def insert_card(dock, card):
     return improved_dock
 
 
-def marker_function():
+def marker_function(sender):
+    global players, conn
+    sender_teammate = players[sender][6]
     global max_player, is_running
     do_marker_countdown = 0
     to_seconds = 0.3
@@ -222,10 +225,42 @@ def marker_function():
         print(new_time)
         send_to_all(pickle.dumps([7, new_time]))
         delta_time = time.time() - t0
+    countries = [0,0,0,0]
+    for x in range(5):
+        if players[sender_teammate][x] != None:
+            dest_country = players[sender_teammate][x]
+        countries[dest_country] += 1
+    win = False
+    for count_countries in range(4):
+        if countries[count_countries] >= 4:
+            win = True
+
+    all_players = []
+
+    for add_players in range(max_player):
+        all_players.append(add_players)
+
+    all_players.remove(sender)
+    all_players.remove(sender_teammate)
+
+    for times in range(8):
+        conn[sender].send(pickle.dumps([86 * win + 87 * (not win)]))
+        conn[sender_teammate].send(pickle.dumps([86 * win + 87 * (not win)]))
+        time.sleep(0.025)
+    for rest in range(len(all_players)):
+        for timess in range(8):
+            conn[rest].send(pickle.dumps([86 * (not win) + 87 * win]))
+            time.sleep(0.025)
+    is_running = False
+
+
+
+    """
     for all_p in range(max_player):
         for times in range(3):
             conn[all_p].send(pickle.dumps([8]))
             time.sleep(0.01)
+    """
     is_running = False
 
 
@@ -347,7 +382,7 @@ def play():
                     marker_received = True
                     if debugging:
                         print("I GOT THE MARKER")
-                    marker_function()
+                    marker_function(c_data[1])
 
         current_player += 1
         if current_player == max_player:

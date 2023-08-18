@@ -74,6 +74,8 @@ def update():
     if teammate_name:
         your_teammate_name.enabled = True
         your_teammate_name.text = teammate_name
+        your_name.text = username
+        your_name.enabled = True
 
 
 textures = ["ir", "fr", "am", "ar"]  # country BALL texture
@@ -365,10 +367,7 @@ def exit_game(dont_exit=False):
         o_marker.disable()
         table.disable()
     Main_menu_back.enabled = True
-    reset_menu_ui()
-    show_main_menu()
-    Ingame_back.enabled = False
-    if not testing and not dont_exit:
+    if not dont_exit:
         application.quit()
 
 
@@ -478,6 +477,21 @@ def music_mode_change():
     settings.write(config_file)
 
 
+def win_lost(won):
+    exit_game(True)
+    WinLost_text.text = "YOU LOST"
+    if won:
+        WinLost_text.text = "You WON"
+    WinLost_text.enabled = True
+    Main_menu_exit.enabled = True
+
+
+def exit_test_scene():
+    exit_game(True)
+    show_main_menu()
+    Ingame_back.enabled = False
+
+
 def join_function():
     global is_server_shut_down, last_used_port, last_used_ip, settings, config_name, username, connected_ID
     is_server_shut_down = False
@@ -547,10 +561,14 @@ def multiplayer_thread():
                 elif data[0] == 7:  # server received marker request and is sending countdown result
                     marker_counting_down = True
                     count_down_value = data[1]
-                elif data[0] == 8:
-                    application.quit()
                 elif data[0] == 81:
                     client.send_data([82, connected_ID, username])
+                elif data[0] == 86:
+                    win_lost(True)
+                    break
+                elif data[0] == 87:
+                    win_lost(False)
+                    break
                 elif data[0] == 99:
                     server_shut_down(data[1])
                 if send_card:
@@ -641,8 +659,10 @@ if music_enabled:
 
 your_turn_text = Text(text="your turn", position=(-0.5, 0.5, 0), color=color.green)
 your_teammate_name = Text(text="em", position=(0.5, 0.5, 0), color=color.blue)
+your_name = Text(text="you", position=(0.5, 0.45, 0), color=color.black)
 your_turn_text.enabled = False
 your_teammate_name.enabled = False
+your_name.enabled = False
 # For god's sake! button text is glitched. So we define our own
 start_text = Text(parent=Main_menu_start, text="Start", position=(-0.15, 0.1, 0), scale=5)
 settings_text = Text(parent=Main_menu_settings, text="Settings", position=(-0.15, 0.1, 0), scale=5)
@@ -688,6 +708,10 @@ Countryselect_select_2.enabled = False
 Countryselect_back_button.enabled = False
 Countryselect_test_button.enabled = False
 
+WinLost_text = Text(parent = Main_menu_back, text="woowoowow", position=(-0.1,0,-0.1), scale = 3)
+WinLost_text.enabled = False
+
+
 waiting_for_players = Text(text="waiting for players", position=Vec3(-0.2, 0, 10), scale=(2))
 waiting_for_players.visible = False
 
@@ -700,7 +724,7 @@ Main_menu_settings.on_click = open_settings_menu
 Settings_menu_back.on_click = show_main_menu
 Joingame_back_address_port.on_click = on_start
 Joingame_join_address_port.on_click = join_function
-Ingame_back.on_click = exit_game
+Ingame_back.on_click = exit_test_scene
 Server_shutdown_back.on_click = show_main_menu
 Server_shutdown_exit.on_click = application.quit
 Countryselect_test_button.on_click = test_country_select
